@@ -21,7 +21,7 @@ This is a term project for CS 455 Distributed Systems. This project examines wor
     * It should list all of the files in the dataset. This ensures you properly put the dataset in your cluster
 #### Regular setup
 1. Cd into this directory
-2. Run the startup script via `startup.sh`
+2. Run the startup script via `source startup.sh`
     * This script starts your hadoop cluster and reports to you whether or not the dataset is visible
 3. Run the program via `./runjar.sh` 
 

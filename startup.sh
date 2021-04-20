@@ -26,14 +26,14 @@ NOCOLOR=$(tput setf 9)
     echo "  - ${RED}Failed to start hdfs.${NORMAL}${NOCOLOR}"
 }
 
+# export the client config directory
+export HADOOP_CONF_DIR=~/hadoopClientConf
+
 # Check to see if the files exist in the hadoop cluster
 {
     echo "${BOLD}${CYAN}Checking existence of data${NORMAL}${NOCOLOR}"
-    $HADOOP_HOME/bin/hadoop fs -ls /wdi_data
+    $HADOOP_HOME/bin/hadoop fs -ls /home/wdi_data
     echo "${BOLD}${GREEN}Checked existence${NORMAL}${NOCOLOR}"
 } || {
     echo "  - ${RED}Failed to check data existence.${NORMAL}${NOCOLOR}"
 }
-
-# export the client config directory
-export HADOOP_CONF_DIR=~/hadoopClientConf
