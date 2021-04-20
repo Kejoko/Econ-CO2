@@ -9,6 +9,17 @@ GREEN=$(tput setaf 2)
 CYAN=$(tput setaf 6)
 NOCOLOR=$(tput setf 9)
 
+
+# stop yarn before starting again
+{
+    echo "${BOLD}${YELLOW}STOPPING YARN${NORMAL}${NOCOLOR}"
+    $HADOOP_HOME/sbin/stop-yarn.sh
+    echo "${BOLD}${GREEN}STOPPED YARN${NORMAL}${NOCOLOR}"
+} || {
+    echo "  - ${RED}Failed to stop yarn.${NORMAL}${NOCOLOR}"
+}
+
+# stop hdfs before starting again
 {
     echo "${BOLD}${YELLOW}STOPPING HDFS${NORMAL}${NOCOLOR}"
     $HADOOP_HOME/sbin/stop-dfs.sh
@@ -24,6 +35,15 @@ NOCOLOR=$(tput setf 9)
     echo "${BOLD}${GREEN}STARTED HDFS${NORMAL}${NOCOLOR}"
 } || {
     echo "  - ${RED}Failed to start hdfs.${NORMAL}${NOCOLOR}"
+}
+
+# Start YARN
+{
+    echo "${BOLD}${CYAN}STARTING YARN${NORMAL}${NOCOLOR}"
+    $HADOOP_HOME/sbin/start-yarn.sh
+    echo "${BOLD}${GREEN}STARTED YARN${NORMAL}${NOCOLOR}"
+} || {
+    echo "  - ${RED}Failed to start yarn.${NORMAL}${NOCOLOR}"
 }
 
 # export the client config directory

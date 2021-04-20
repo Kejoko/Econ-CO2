@@ -30,7 +30,7 @@ dependencies {
     // The hadoop jar file
     compile group: 'org.apache.hadoop', name: 'hadoop-common', version: '3.1.2'
 	compile group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: '3.1.2'
-	
-	// Spark
-	compile group: 'org.apache.spark', name: 'spark-core_2.12', version: '3.0.1'
+
+    //Spark
+    compile group: 'org.apache.spark', name: 'spark-core_2.12', version: '3.0.1'
 }
