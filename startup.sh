@@ -34,3 +34,6 @@ NOCOLOR=$(tput setf 9)
 } || {
     echo "  - ${RED}Failed to check data existence.${NORMAL}${NOCOLOR}"
 }
+
+# export the client config directory
+export HADOOP_CONF_DIR=~/hadoopClientConf
