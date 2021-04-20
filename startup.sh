@@ -57,3 +57,6 @@ export HADOOP_CONF_DIR=~/hadoopClientConf
 } || {
     echo "  - ${RED}Failed to check data existence.${NORMAL}${NOCOLOR}"
 }
+
+# export easy command for spark-submit
+export SPARK_SUBMIT=/usr/local/spark/3.0.1-with-hadoop3.2/bin/spark-submit
