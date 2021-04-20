@@ -11,10 +11,10 @@ NOCOLOR=$(tput setf 9)
 
 # Set the proper directories, jars, and classes based on input argument
 HADOOP_BIN="${HADOOP_HOME}/bin/hadoop"
-INPUT_DIR="/home/wdi_data"
-OUTPUT_DIR="/home/co2_out"
+INPUT_DIR="/wdi_data"
+OUTPUT_DIR="/co2_out"
 JAR_FILE="build/libs/Econ-CO2.jar"
-MAIN_CLASS=""
+MAIN_CLASS="wdi.WDImain"
 
 # Remove the output directory before attempting to write to it
 {

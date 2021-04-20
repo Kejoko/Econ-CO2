@@ -27,3 +27,10 @@ NOCOLOR=$(tput setf 9)
 }
 
 # Check to see if the files exist in the hadoop cluster
+{
+    echo "${BOLD}${CYAN}Checking existence of data${NORMAL}${NOCOLOR}"
+    $HADOOP_HOME/bin/hadoop fs -ls /wdi_data
+    echo "${BOLD}${GREEN}Checked existence${NORMAL}${NOCOLOR}"
+} || {
+    echo "  - ${RED}Failed to check data existence.${NORMAL}${NOCOLOR}"
+}
