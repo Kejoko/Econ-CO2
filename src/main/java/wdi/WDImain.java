@@ -10,7 +10,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-import static spark.Spark.*;
+import org.apache.spark.*;
 
 import wdi.util.*;
 
