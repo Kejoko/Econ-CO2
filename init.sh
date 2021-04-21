@@ -10,10 +10,8 @@ CYAN=$(tput setaf 6)
 NOCOLOR=$(tput setf 9)
 
 CURR_DIR=$(pwd)
-#SPARK_DIR=spark-3.1.1-bin-without-hadoop
 SPARK_DIR=spark-3.1.1-bin-hadoop3.2
 SPARK_CONF_DIR=${SPARK_DIR}/conf
-#SPARK_DL_URL=https://downloads.apache.org/spark/spark-3.1.1/spark-3.1.1-bin-without-hadoop.tgz
 SPARK_DL_URL=https://downloads.apache.org/spark/spark-3.1.1/${SPARK_DIR}.tgz
 
 # Download the latest release of spark
