@@ -33,4 +33,7 @@ dependencies {
 
     //Spark
     compile group: 'org.apache.spark', name: 'spark-core_2.12', version: '3.0.1'
+
+    //log4j
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.1'
 }
