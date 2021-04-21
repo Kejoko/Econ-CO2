@@ -11,11 +11,13 @@ NOCOLOR=$(tput setf 9)
 
 # Start spark cluster
 {
-    echo "${BOLD}${CYAN}Starting spark cluster${NORMAL}${NOCOLOR}"
+    echo ""
+    echo ""
+    echo "${CYAN}Attempting:${NORMAL}${NOCOLOR} Starting spark cluster"
     $SPARK_HOME/sbin/start-all.sh
-    echo "${BOLD}${GREEN}Started spark cluster${NORMAL}${NOCOLOR}"
+    echo "${BOLD}${GREEN}SUCCESS:${NORMAL}${NOCOLOR} Started spark cluster"
 } || {
-    echo "  - ${RED}Failed to start spark Master.${NORMAL}${NOCOLOR}"
+    echo "  - ${RED}Failed to start spark cluster.${NORMAL}${NOCOLOR}"
 }
 
 # export easy command for spark-submit
