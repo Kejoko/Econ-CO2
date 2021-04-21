@@ -21,7 +21,7 @@ public class WDImain {
 		try {
 			Configuration conf1 = new Configuration();
 			
-			Job job1 = Job.getInstance(conf1, "Q1 & Q2 - Best/Worst Days of the Week");
+			Job job1 = Job.getInstance(conf1, "Economic Indicators Correlation to CO2 Emissions");
 			job1.setJarByClass(WDImain.class);
 			job1.setMapperClass(DummyMapper.class);
 			job1.setCombinerClass(DummyReducer.class);
