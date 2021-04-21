@@ -16,18 +16,22 @@ SPARK_DL_URL=https://downloads.apache.org/spark/spark-3.1.1/spark-3.1.1-bin-with
 
 # Download the latest release of spark
 {
-    echo "${BOLD}${CYAN}Downloading spark${NORMAL}${NOCOLOR}"
+    echo ""
+    echo ""
+    echo "${CYAN}Attempting:${NORMAL}${NOCOLOR} Downloading spark"
     wget ${SPARK_DL_URL}
-    echo "${BOLD}${GREEN}Successfully downloaded spark${NORMAL}${NOCOLOR}"
+    echo "${BOLD}${GREEN}SUCCESS:${NORMAL}${NOCOLOR} Downloaded spark"
 } || {
     echo "  - ${RED}Failed to download spark.${NORMAL}${NOCOLOR}"
 }
 
 # Untar the downlaoded spark distro
 {
-    echo "${BOLD}${CYAN}Unpacking spark${NORMAL}${NOCOLOR}"
+    echo ""
+    echo ""
+    echo "${CYAN}Attempting:${NORMAL}${NOCOLOR} Unpacking spark"
     tar -xzvf ${SPARK_DIR}.tgz
-    echo "${BOLD}${GREEN}Successfully unpacked spark${NORMAL}${NOCOLOR}"
+    echo "${BOLD}${GREEN}SUCCESS:${NORMAL}${NOCOLOR} Unpacked spark"
 } || {
     echo "  - ${RED}Failed to unpack spark.${NORMAL}${NOCOLOR}"
 }
@@ -35,7 +39,9 @@ SPARK_DL_URL=https://downloads.apache.org/spark/spark-3.1.1/spark-3.1.1-bin-with
 # Rename and update slaves file
 SLAVES_FILE=${SPARK_CONF_DIR}/slaves
 {
-    echo "${BOLD}${CYAN}Updating slaves file${NORMAL}${NOCOLOR}: ${SLAVES_FILE}"
+    echo ""
+    echo ""
+    echo "${CYAN}Attempting:${NORMAL}${NOCOLOR} Updating slaves file: ${SLAVES_FILE}"
     mv ${SLAVES_FILE}.template ${SLAVES_FILE}
     echo "atlanta" > ${SLAVES_FILE}
     echo "augusta" >> ${SLAVES_FILE}
@@ -50,7 +56,7 @@ SLAVES_FILE=${SPARK_CONF_DIR}/slaves
     echo "columbia" >> ${SLAVES_FILE}
     echo "columbus-oh" >> ${SLAVES_FILE}
     echo "concord" >> ${SLAVES_FILE}
-    echo "${BOLD}${GREEN}Successfully updated slaves file${NORMAL}${NOCOLOR}"
+    echo "${BOLD}${GREEN}SUCCESS:${NORMAL}${NOCOLOR} Updated slaves file"
 } || {
     echo "  - ${RED}Failed to update slaves file.${NORMAL}${NOCOLOR}"
 }
@@ -58,7 +64,9 @@ SLAVES_FILE=${SPARK_CONF_DIR}/slaves
 # Rename and update spark-env.sh
 ENV_FILE=${SPARK_CONF_DIR}/spark-env.sh
 {
-    echo "${BOLD}${CYAN}Updating spark-env.sh file${NORMAL}${NOCOLOR}: ${ENV_FILE}"
+    echo ""
+    echo ""
+    echo "${CYAN}Attempting:${NORMAL}${NOCOLOR} Updating spark-env.sh file: ${ENV_FILE}"
     mv ${ENV_FILE}.template ${ENV_FILE}
     echo "export SPARK_MASTER_IP=des-moines" >> ${ENV_FILE}
     echo "export SPARK_MASTER_PORT=50000" >> ${ENV_FILE}
@@ -66,7 +74,7 @@ ENV_FILE=${SPARK_CONF_DIR}/spark-env.sh
     echo "export SPARK_WORKER_CORES=2" >> ${ENV_FILE}
     echo "export SPARK_WORKER_MEMORY=2g" >> ${ENV_FILE}
     echo "export SPARK_WORKER_INSTANCES=2" >> ${ENV_FILE}
-    echo "${BOLD}${GREEN}Successfully updated spark-env.sh file${NORMAL}${NOCOLOR}"
+    echo "${BOLD}${GREEN}SUCCESS:${NORMAL}${NOCOLOR} Updated spark-env.sh file"
 } || {
     echo "  - ${RED}Failed to update spark-env.sh file.${NORMAL}${NOCOLOR}"
 }
@@ -74,27 +82,27 @@ ENV_FILE=${SPARK_CONF_DIR}/spark-env.sh
 # Rename and update spark-defaults.conf
 DEFAULTS_FILE=${SPARK_CONF_DIR}/spark-defaults.conf
 {
-    echo "${BOLD}${CYAN}Updating spark-defaults.conf file${NORMAL}${NOCOLOR}: ${DEFAULTS_FILE}"
+    echo ""
+    echo ""
+    echo "${CYAN}Attempting:${NORMAL}${NOCOLOR} Updating spark-defaults.conf file: ${DEFAULTS_FILE}"
     mv ${DEFAULTS_FILE}.template ${DEFAULTS_FILE}
     echo "spark.master          spark://des-moines:50000" >> ${DEFAULTS_FILE}
-    echo "${BOLD}${GREEN}Successfully updated spark-defaults.conf file${NORMAL}${NOCOLOR}"
+    echo "${BOLD}${GREEN}SUCCESS:${NORMAL}${NOCOLOR} Updated spark-defaults.conf file"
 } || {
     echo "  - ${RED}Failed to update spark-defaults.conf file.${NORMAL}${NOCOLOR}"
 }
 
 # Update the bashrc with the name of new spark dir
 {
-    echo "${BOLD}${CYAN}Updating ~/.bashrc${NORMAL}${NOCOLOR}"
-#    echo "" >> ~/.bashrc
-#    echo "" >> ~/.bashrc
-#    echo "# Spark home directory for cs455 term project" >> ~/.bashrc
-#    echo "export SPARK_HOME=${CURR_DIR}/${SPARK_DIR}" >> ~/.bashrc
     echo ""
     echo ""
-    echo "# Spark home directory for cs455 term project"
-    echo "export SPARK_HOME=${CURR_DIR}/${SPARK_DIR}"
+    echo "${CYAN}Attempting:${NORMAL}${NOCOLOR} Updating and sourcing ~/.bashrc"
+    echo "" >> ~/.bashrc
+    echo "" >> ~/.bashrc
+    echo "# Spark home directory for cs455 term project" >> ~/.bashrc
+    echo "export SPARK_HOME=${CURR_DIR}/${SPARK_DIR}" >> ~/.bashrc
     source ~/.bashrc
-    echo "${BOLD}${GREEN}Successfully updated ~/.bashrc${NORMAL}${NOCOLOR}"
+    echo "${BOLD}${GREEN}SUCCESS:${NORMAL}${NOCOLOR} Updated and sourced ~/.bashrc"
 } || {
-    echo "  - ${RED}Failed to update ~/.bashrc.${NORMAL}${NOCOLOR}"
+    echo "  - ${RED}Failed to update or source ~/.bashrc.${NORMAL}${NOCOLOR}"
 }
