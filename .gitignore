@@ -1,6 +1,13 @@
 # MACOS bs
 .DS_Store
 
+# Ignore spark binaries and stuff
+spark-3.1.1-bin-without-hadoop/
+spark-3.1.1-bin-without-hadoop.tgz
+
+# Ignore data
+wdi_data/
+
 # Ignore Gradle project-specific cache directory
 .gradle
 

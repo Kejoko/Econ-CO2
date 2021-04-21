@@ -19,9 +19,11 @@ This is a term project for CS 455 Distributed Systems. This project examines wor
     * This puts the unarchived data directory into the hadoop cluster at location `/wdi_data`
 6. Run: `$HADOOP_HOME/bin/hadoop fs -ls /wdi_data`
     * It should list all of the files in the dataset. This ensures you properly put the dataset in your cluster
+7. Run: `source init.sh`
+    * This downloads and sets up spark
+    
 #### Regular setup
 1. Cd into this directory
 2. Run the startup script via `source startup.sh`
-    * This script starts your hadoop cluster and reports to you whether or not the dataset is visible
-3. Run the program via `./runjar.sh` 
+    * This script starts your spark cluster and exports an environment variable `SPARK_SUBMIT` making it easy to submit spark jobs
 
