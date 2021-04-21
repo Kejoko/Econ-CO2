@@ -93,6 +93,7 @@ DEFAULTS_FILE=${SPARK_CONF_DIR}/spark-defaults.conf
     echo ""
     echo "# Spark home directory for cs455 term project"
     echo "export SPARK_HOME=${CURR_DIR}/${SPARK_DIR}"
+    source ~/.bashrc
     echo "${BOLD}${GREEN}Successfully updated ~/.bashrc${NORMAL}${NOCOLOR}"
 } || {
     echo "  - ${RED}Failed to update ~/.bashrc.${NORMAL}${NOCOLOR}"
