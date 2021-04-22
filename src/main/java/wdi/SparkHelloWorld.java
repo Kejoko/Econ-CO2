@@ -10,7 +10,7 @@ import java.io.IOException;
 public class SparkHelloWorld {
     public static void main(String[] args) throws IOException {
 //    	String wdiDatasetPath = "/s/chopin/n/under/deionus/WDIDataset";
-    	String wdiDatasetPath = "/s/bach/j/under/deionus/WDIDataset";
+    	String wdiDatasetPath = "/s/bach/j/under/kkochis/WDIDataset";
         SparkConf sparkConf = new SparkConf().setAppName("Spark Hello World").setMaster("local");
         JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
         JavaRDD<String> stringJavaRDD = sparkContext.textFile("file://" + wdiDatasetPath + "/Indicators.csv");
