@@ -27,3 +27,6 @@ This is a term project for CS 455 Distributed Systems. This project examines wor
 2. Run the startup script via `source startup.sh`
     * This script starts your spark cluster and exports an environment variable `SPARK_SUBMIT` making it easy to submit spark jobs
 
+#### Run a Spark Job locally
+1. cd into `/usr/local/spark/3.0.1-with-hadoop3.2/bin`
+2. Run the command `spark-submit --class [class name] --master local [jar file path]`
