@@ -24,4 +24,7 @@ This is a term project for CS 455 Distributed Systems. This project examines wor
 1. Cd into this directory
 1. Run the startup script via `source startup.sh`
     * This script starts your spark cluster and exports an environment variable `SPARK_SUBMIT` making it easy to submit spark jobs
-
+1. SSH tunnel to view the running jobs
+    * `ssh -L 49999:des-moines.cs.colostate.edu:50001 <username>@des-moines.cs.colostate.edu`
+    * Navigate to `localhost:49999` in web browser
+2. Run `./runjar.sh` to submit a job to the cluster
