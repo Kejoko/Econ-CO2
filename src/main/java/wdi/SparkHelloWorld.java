@@ -15,11 +15,13 @@ import java.util.Comparator;
 import java.util.List;
 
 public class SparkHelloWorld {
-	
-	static double co2Sum = 0;
-	static double sums[] = {0, 0, 0, 0, 0};
+
 	static int co2Count = 0;
 	static int counts[] = {0, 0, 0, 0, 0};
+	static double co2Sum = 0;
+	static double sums[] = {0, 0, 0, 0, 0};
+	static double co2mean = 0;
+	static double means[] = {0, 0, 0, 0, 0};
 	
     public static void main(String[] args) throws IOException {
     	SparkConf sparkConf = new SparkConf().setAppName("Spark Hello World").setMaster("local");
@@ -36,6 +38,7 @@ public class SparkHelloWorld {
         //set up CO2 RDD
         JavaRDD<String> filterByCO2 = filterByIndicatorCode(stringJavaRDD, CO2IndicatorCode);
         JavaPairRDD<String, Double> pairCO2 = pair(-1, filterByCO2);
+        co2mean = co2Sum / co2Count;
         //normalize values first so that join already has normalized values
         JavaPairRDD<String, Double> normalizedCO2 = normalize(pairCO2);
 
@@ -52,6 +55,7 @@ public class SparkHelloWorld {
 
             //Map the RDD to KEY VALUE pair
             JavaPairRDD<String, Double> paired = pair(i, filtered);
+            means[i] = sums[i] / counts[i];
 
             //Normalize the data
             JavaPairRDD<String, Double> normalized = normalize(paired);
@@ -71,6 +75,7 @@ public class SparkHelloWorld {
         for (int i = 0; i < data.size(); i++) {
         	List<Tuple2<String, Tuple2<Double, Double>>> collection = data.get(i);
         	System.out.println("\n" + indicatorNames[i]);
+        	System.out.println(String.format("Mean: %f", means[i]));
         	for (int j = 0; j < 10; j++) {
                 Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(j);
                 String tupleString = String.format("%8.7f , %8.7f", tuple._2._1, tuple._2._2);
