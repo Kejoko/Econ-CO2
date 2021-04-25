@@ -69,12 +69,11 @@ public class SparkHelloWorld {
             //calculate coefficient
             //pass collection to function... put coefficient on array or something
             corrCoeffs[i] = calculateCorrelationCoefficient(joined, co2Info[2], meanInfo[i][2]);
-
         }
         
         System.out.println("CO2 emissions metric tons per capita");
-        System.out.println("Min:   " + minimums.get(0));
-        System.out.println("Max:   " + maximums.get(0));
+        System.out.println("Min:   " + minimums.get(0)._2);
+        System.out.println("Max:   " + maximums.get(0)._2);
     	System.out.println("Count: " + co2Info[0]);
     	System.out.println("Sum:   " + co2Info[1]);
     	System.out.println("Mean:  " + co2Info[2]);
@@ -82,8 +81,8 @@ public class SparkHelloWorld {
         for (int i = 0; i < data.size(); i++) {
         	List<Tuple2<String, Tuple2<Double, Double>>> collection = data.get(i);
         	System.out.println("\n" + indicatorNames[i]);
-            System.out.println("Min:   " + minimums.get(i + 1));
-            System.out.println("Max:   " + maximums.get(i + 1));
+            System.out.println("Min:   " + minimums.get(i + 1)._2);
+            System.out.println("Max:   " + maximums.get(i + 1)._2);
         	System.out.println("Count: " + meanInfo[i][0]);
         	System.out.println("Sum:   " + meanInfo[i][1]);
         	System.out.println("Mean:  " + meanInfo[i][2]);
