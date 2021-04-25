@@ -55,18 +55,9 @@ public class SparkHelloWorld {
         	for (int j = 0; j < 10; j++) {
                 Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(j);
                 String tupleString = String.format("%20.5f , %10.5f", tuple._2._1, tuple._2._2);
-                System.out.println(tuple._1 + " ( " + tupleString + " )");
-                
-        	}
-        	
+                System.out.println(tuple._1 + " ( " + tupleString + " )");   
+        	}	
         }
-
-//        for (List<Tuple2<String, Tuple2<Double, Double>>> collection : RDDs) {
-//            for (int i = 0; i < 25; i++) {
-//                Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(i);
-//                System.out.println(tuple._1 + " (" + tuple._2._1 + "," + tuple._2._2 + ")");
-//            }
-//        }
     }
 
     //Method which calls MapToPair and returns an RDD with a key of Country Code and a Value
