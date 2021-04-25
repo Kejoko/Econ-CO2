@@ -15,10 +15,9 @@ import java.util.List;
 
 public class SparkHelloWorld {
     public static void main(String[] args) throws IOException {
-        SparkConf sparkConf = new SparkConf().setAppName("Spark Hello World").setMaster("local");
+    	SparkConf sparkConf = new SparkConf().setAppName("Spark Hello World").setMaster("local");
         JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
-        //sparkContext.addJar("file:///Econ-C02.jar");
-        JavaRDD<String> stringJavaRDD = sparkContext.textFile("file:///s/chopin/n/under/deionus/WDIDataset/Indicators.csv");
+        JavaRDD<String> stringJavaRDD = sparkContext.textFile("file://" + args[0] + "/WDIDataset/Indicators.csv");
 
         //TEST RUN FOR MERCHANDISE EXPORTS (TX.VAL.MRCH.CD.WT)
         //CO2 EN.ATM.CO2E.PC
@@ -61,12 +60,14 @@ public class SparkHelloWorld {
 
         }
 
-        for (List<Tuple2<String, Tuple2<Double, Double>>> collection : data) {
-            System.out.println("-");
-            for (int i = 0; i < 25; i++) {
-                Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(i);
-                System.out.println(tuple._1 + " (" + tuple._2._1 + "," + tuple._2._2 + ")");
-            }
+        for (int i = 0; i < RDDs.size(); i++) {
+        	List<Tuple2<String, Tuple2<Double, Double>>> collection = RDDs.get(i);
+        	System.out.println("\n" + indicatorNames[i]);
+        	for (int j = 0; j < 10; j++) {
+                Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(j);
+                String tupleString = String.format("%20.5f , %10.5f", tuple._2._1, tuple._2._2);
+                System.out.println(tuple._1 + " ( " + tupleString + " )");
+        	}
         }
     }
 
