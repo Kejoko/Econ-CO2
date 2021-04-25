@@ -6,6 +6,8 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.api.java.function.VoidFunction;
+
 import scala.Serializable;
 import scala.Tuple2;
 
@@ -171,15 +173,22 @@ public class SparkHelloWorld {
     }
     
     private static double[] calculateMean(JavaPairRDD<String, Double> rdd) {
-    	double[] res = {0, 0, 0};
+    	double count = 0.0;
+    	double sum = 0.0;
     	
-    	rdd.foreach(pair -> {
-    		res[0] = res[0] + 1.0;
-    		res[1] = res[1] + pair._2;
-    	});
+    	List<Tuple2<String, Double>> list = rdd.collect();
     	
-    	res[2] = res[1] / res[0];
+    	for (Tuple2<String, Double> tuple : list) {
+    		count += 1.0;
+    		sum += tuple._2;
+    	}
     	
+    	double mean = sum / count;
+    	
+    	double[] res = new double[3];
+    	res[0] = count;
+    	res[1] = sum;
+    	res[2] = mean;
     	return res;
     }
     
