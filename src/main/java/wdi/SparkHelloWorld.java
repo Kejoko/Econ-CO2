@@ -17,7 +17,10 @@ import java.util.Comparator;
 import java.util.List;
 
 public class SparkHelloWorld {
-	
+    //First value will be CO2, then the rest of the indicators in order
+    static List<Tuple2<String, Double>> maximums = new ArrayList<>();
+    static List<Tuple2<String, Double>> minimums = new ArrayList<>();
+    
     public static void main(String[] args) throws IOException {
     	SparkConf sparkConf = new SparkConf().setAppName("Spark Hello World").setMaster("local");
         JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
@@ -91,7 +94,7 @@ public class SparkHelloWorld {
 
     //Method which calls MapToPair and returns an RDD with a key of Country Code and a Value
     private static JavaPairRDD<String, Double> pair(JavaRDD<String> RDD) {
-        return RDD.mapToPair((PairFunction<String, String, Double>) line -> {
+        JavaPairRDD<String, Double> paired = RDD.mapToPair((PairFunction<String, String, Double>) line -> {
 
             //split the line into tokens
             String[] tokens = line.split(",", -1);
@@ -122,8 +125,12 @@ public class SparkHelloWorld {
 
             return new Tuple2<>(key, value);
         });
-        
-        // Filter out the bad codes
+
+        JavaPairRDD<String, Double> filtered = paired.filter((Function<Tuple2<String, Double>, Boolean>) data -> {
+            return !data._1.contains("BadCode") && !data._1.contains("BadYear");
+        });
+
+        return filtered;
     }
 
     private static JavaRDD<String> filterByIndicatorCode(JavaRDD rdd, String indicatorCode) {
@@ -161,6 +168,9 @@ public class SparkHelloWorld {
     private static JavaPairRDD<String, Double> normalize(JavaPairRDD<String, Double> paired) {
         Tuple2<String, Double> maxVal = paired.max(new compareTuple());
         Tuple2<String, Double> minVal = paired.min(new compareTuple());
+
+        maximums.add(maxVal);
+        minimums.add(minVal);
 
         Double denominator = maxVal._2 - minVal._2;
 
