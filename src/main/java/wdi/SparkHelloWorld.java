@@ -60,8 +60,8 @@ public class SparkHelloWorld {
 
         }
 
-        for (int i = 0; i < RDDs.size(); i++) {
-        	List<Tuple2<String, Tuple2<Double, Double>>> collection = RDDs.get(i);
+        for (int i = 0; i < data.size(); i++) {
+        	List<Tuple2<String, Tuple2<Double, Double>>> collection = data.get(i);
         	System.out.println("\n" + indicatorNames[i]);
         	for (int j = 0; j < 10; j++) {
                 Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(j);
