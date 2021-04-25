@@ -16,8 +16,8 @@ import java.util.List;
 
 public class SparkHelloWorld {
 
-	static int co2Count = 0;
-	static int counts[] = {0, 0, 0, 0, 0};
+	static double co2Count = 0;
+	static double counts[] = {0, 0, 0, 0, 0};
 	static double co2Sum = 0;
 	static double sums[] = {0, 0, 0, 0, 0};
 	static double co2Mean = 0;
@@ -37,10 +37,10 @@ public class SparkHelloWorld {
 
         //set up CO2 RDD
         JavaRDD<String> filterByCO2 = filterByIndicatorCode(stringJavaRDD, CO2IndicatorCode);
-        JavaPairRDD<String, Double> pairCO2 = pair(-1, filterByCO2);
-        co2Mean = co2Sum / (double)co2Count;
+        JavaPairRDD<String, Double> pairCO2 = pair(filterByCO2);
         //normalize values first so that join already has normalized values
-        JavaPairRDD<String, Double> normalizedCO2 = normalize(pairCO2);
+        JavaPairRDD<String, Double> normalizedCO2 = normalize(-1, pairCO2);
+        co2Mean = co2Sum / co2Count;
 
         //Filter by all relevant codes
         JavaRDD<String> initialFilter = filterByCodes(stringJavaRDD, indicators);
@@ -54,11 +54,11 @@ public class SparkHelloWorld {
             JavaRDD<String> filtered = filterByIndicatorCode(initialFilter, indicators[i]);
 
             //Map the RDD to KEY VALUE pair
-            JavaPairRDD<String, Double> paired = pair(i, filtered);
-            means[i] = sums[i] / (double)(counts[i]);
+            JavaPairRDD<String, Double> paired = pair(filtered);
 
             //Normalize the data
-            JavaPairRDD<String, Double> normalized = normalize(paired);
+            JavaPairRDD<String, Double> normalized = normalize(i, paired);
+            means[i] = sums[i] / counts[i];
 
             //JOIN the RDD to the CO2 RDD
             JavaPairRDD<String, Tuple2<Double, Double>> joined = normalized.join(normalizedCO2);
@@ -92,7 +92,7 @@ public class SparkHelloWorld {
     }
 
     //Method which calls MapToPair and returns an RDD with a key of Country Code and a Value
-    private static JavaPairRDD<String, Double> pair(int indicatorIndex, JavaRDD<String> RDD) {
+    private static JavaPairRDD<String, Double> pair(JavaRDD<String> RDD) {
         return RDD.mapToPair((PairFunction<String, String, Double>) line -> {
 
             //split the line into tokens
@@ -101,14 +101,13 @@ public class SparkHelloWorld {
             //Get the country code
             String countryCode = tokens[1];
             String year = tokens[4];
-            boolean shouldUpdate = true;
+            
             if (countryCode == null || countryCode.length() == 0) {
                 countryCode = "BadCode";
-                shouldUpdate = false;
             }
+            
             if (year == null || year.length() == 0) {
                 year = "BadYear";
-                shouldUpdate = false;
             }
 
             String key = countryCode + year;
@@ -121,16 +120,6 @@ public class SparkHelloWorld {
             catch (NumberFormatException e)
             {
                 value = 0.0;
-            }
-            
-            if (shouldUpdate) {
-            	if (indicatorIndex == -1) {
-            		co2Sum += value;
-            		co2Count++;
-            	} else {
-            		sums[indicatorIndex] += value;
-            		counts[indicatorIndex]++;
-            	}
             }
 
             return new Tuple2<>(key, value);
@@ -171,7 +160,7 @@ public class SparkHelloWorld {
         return ret;
     }
 
-    private static JavaPairRDD<String, Double> normalize(JavaPairRDD<String, Double> paired) {
+    private static JavaPairRDD<String, Double> normalize(int indicatorIndex, JavaPairRDD<String, Double> paired) {
         Tuple2<String, Double> maxVal = paired.max(new compareTuple());
         Tuple2<String, Double> minVal = paired.min(new compareTuple());
 
@@ -180,6 +169,14 @@ public class SparkHelloWorld {
         JavaPairRDD<String, Double> ret = paired.mapToPair((PairFunction<Tuple2<String, Double>, String, Double>) data -> {
 
             Double norm = (data._2 - minVal._2) / denominator;
+            
+            if (indicatorIndex == -1) {
+            	co2Count += 1.0;
+            	co2Sum += norm;
+            } else {
+            	counts[indicatorIndex] += 1.0;
+            	sums[indicatorIndex] += norm;
+            }
 
             return new Tuple2<>(data._1, norm);
         });
@@ -188,14 +185,13 @@ public class SparkHelloWorld {
     }
     
     private static double calculateCorrelationCoefficient(JavaPairRDD<String, Tuple2<Double, Double>> rdd) {
-    	// Calculate xmean
+    	// Calculate xmean (econ indicator var mean)
     	
-    	// Calulate ymean
+    	// Calulate ymean (co2 indicator var mean)
     	
     	// Where x is economic value
     	// Where y is co2 value
     	// Sum for all i: (xi - xmean)(yi - ymean)
-    	
     	
     	return 0;
     }
