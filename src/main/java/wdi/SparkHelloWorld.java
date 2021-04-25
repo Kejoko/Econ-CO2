@@ -10,6 +10,7 @@ import scala.Tuple2;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class SparkHelloWorld {
@@ -29,11 +30,14 @@ public class SparkHelloWorld {
         //set up CO2 RDD
         JavaRDD<String> filterByCO2 = filterByIndicatorCode(stringJavaRDD, CO2IndicatorCode);
         JavaPairRDD<String, Double> pairCO2 = pair(filterByCO2);
+        //normalize values first so that join already has normalized values
+        JavaPairRDD<String, Double> normalizedCO2 = normalize(pairCO2);
 
+        //Filter by all relevant codes
         JavaRDD<String> initialFilter = filterByCodes(stringJavaRDD, indicators);
 
         // Filter out everything except the entries with the correct Indicator Code
-        List<List<Tuple2<String, Tuple2<Double, Double>>>> RDDs = new ArrayList<>(5);
+        List<List<Tuple2<String, Tuple2<Double, Double>>>> data = new ArrayList<>(5);
 
         for (int i = 0; i < indicators.length; i++) {
 
@@ -43,14 +47,22 @@ public class SparkHelloWorld {
             //Map the RDD to KEY VALUE pair
             JavaPairRDD<String, Double> paired = pair(filtered);
 
+            //Normalize the data
+            JavaPairRDD<String, Double> normalized = normalize(paired);
+
             //JOIN the RDD to the CO2 RDD
-            JavaPairRDD<String, Tuple2<Double, Double>> joined = paired.join(pairCO2);
+            JavaPairRDD<String, Tuple2<Double, Double>> joined = normalized.join(normalizedCO2);
 
             //Collect the output
-            RDDs.add(i, joined.collect());
+            data.add(i, joined.collect());
+
+            //calculate coefficient
+            //pass collection to function... put coefficient on array or something
+
         }
 
-        for (List<Tuple2<String, Tuple2<Double, Double>>> collection : RDDs) {
+        for (List<Tuple2<String, Tuple2<Double, Double>>> collection : data) {
+            System.out.println("-");
             for (int i = 0; i < 25; i++) {
                 Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(i);
                 System.out.println(tuple._1 + " (" + tuple._2._1 + "," + tuple._2._2 + ")");
@@ -116,6 +128,22 @@ public class SparkHelloWorld {
             }
 
             return tokens[3] != null && contains;
+        });
+
+        return ret;
+    }
+
+    private static JavaPairRDD<String, Double> normalize(JavaPairRDD<String, Double> paired) {
+        Tuple2<String, Double> maxVal = paired.max((o1, o2) -> (int) (o1._2 - o2._2));
+        Tuple2<String, Double> minVal = paired.min((o1, o2) -> (int) (o1._2 - o2._2));
+
+        Double denominator = maxVal._2 - minVal._2;
+
+        JavaPairRDD<String, Double> ret = paired.mapToPair((PairFunction<Tuple2<String, Double>, String, Double>) data -> {
+
+            Double norm = (data._2 - minVal._2) / denominator;
+
+            return new Tuple2<>(data._1, norm);
         });
 
         return ret;
