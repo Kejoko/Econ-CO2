@@ -20,7 +20,7 @@ public class SparkHelloWorld {
 	static int counts[] = {0, 0, 0, 0, 0};
 	static double co2Sum = 0;
 	static double sums[] = {0, 0, 0, 0, 0};
-	static double co2mean = 0;
+	static double co2Mean = 0;
 	static double means[] = {0, 0, 0, 0, 0};
 	
     public static void main(String[] args) throws IOException {
@@ -38,7 +38,7 @@ public class SparkHelloWorld {
         //set up CO2 RDD
         JavaRDD<String> filterByCO2 = filterByIndicatorCode(stringJavaRDD, CO2IndicatorCode);
         JavaPairRDD<String, Double> pairCO2 = pair(-1, filterByCO2);
-        co2mean = co2Sum / co2Count;
+        co2Mean = co2Sum / co2Count;
         //normalize values first so that join already has normalized values
         JavaPairRDD<String, Double> normalizedCO2 = normalize(pairCO2);
 
@@ -71,11 +71,18 @@ public class SparkHelloWorld {
             double correlationCoefficient = calculateCorrelationCoefficient(joined);
 
         }
-
+        
+        System.out.println("CO2 emissions metric tons per capita");
+        System.out.println("Count: " + co2Count);
+        System.out.println("Sum: " + co2Sum);
+        System.out.println("Mean: " + co2Mean);
+        
         for (int i = 0; i < data.size(); i++) {
         	List<Tuple2<String, Tuple2<Double, Double>>> collection = data.get(i);
         	System.out.println("\n" + indicatorNames[i]);
-        	System.out.println(String.format("Mean: %f", means[i]));
+        	System.out.println("Count: " + counts[i]);
+        	System.out.println("Sum: " + sums[i]);
+        	System.out.println("Mean: " + means[i]);
         	for (int j = 0; j < 10; j++) {
                 Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(j);
                 String tupleString = String.format("%8.7f , %8.7f", tuple._2._1, tuple._2._2);
@@ -104,7 +111,7 @@ public class SparkHelloWorld {
                 shouldUpdate = false;
             }
 
-            String key = countryCode+year;
+            String key = countryCode + year;
 
             Double value;
             //Get the value
