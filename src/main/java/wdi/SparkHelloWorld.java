@@ -9,6 +9,7 @@ import org.apache.spark.api.java.function.PairFunction;
 import scala.Tuple2;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SparkHelloWorld {
@@ -21,37 +22,39 @@ public class SparkHelloWorld {
         //TEST RUN FOR MERCHANDISE EXPORTS (TX.VAL.MRCH.CD.WT)
         //CO2 EN.ATM.CO2E.PC
 
-        //Filter out everything except the entries with the correct Indicator Code
-        JavaRDD<String> filterByExports = stringJavaRDD.filter((Function<String, Boolean>) line -> {
+        String[] indicators = { "TX.VAL.MRCH.CD.WT", "TM.VAL.MRCH.CD.WT", "TG.VAL.TOTL.GD.ZS", "NY.GDP.PCAP.CD", "NY.GNP.MKTP.CD"};
+        String[] indicatorNames = { "Merchandise Exports $US", "Merchandise Imports $US", "Merchandise Trade % of GDP", "GDP per capita $US", "GNI $US"};
+        String CO2IndicatorCode = "EN.ATM.CO2E.PC";
 
-            //split the line into tokens
-            String[] tokens = line.split(",", -1);
-
-            //If the token has a value, return true if it has the correct code
-            return tokens[3] != null && tokens[3].equals("TX.VAL.MRCH.CD.WT");
-        });
-
-        JavaRDD<String> filterByCO2 = stringJavaRDD.filter((Function<String, Boolean>) line -> {
-
-            //split the line into tokens
-            String[] tokens = line.split(",", -1);
-
-            //If the token has a value, return true if it has the correct code
-            return tokens[3] != null && tokens[3].equals("EN.ATM.CO2E.PC");
-        });
-
-        //Map the datasets to KEY VALUE pair
-        JavaPairRDD<String, Double> pairExports = pair(filterByExports);
+        //set up CO2 RDD
+        JavaRDD<String> filterByCO2 = filterByIndicatorCode(stringJavaRDD, CO2IndicatorCode);
         JavaPairRDD<String, Double> pairCO2 = pair(filterByCO2);
 
-        JavaPairRDD<String, Tuple2<Double, Double>> joined = pairExports.join(pairCO2);
+        JavaRDD<String> initialFilter = filterByCodes(stringJavaRDD, indicators);
 
-        List<Tuple2<String, Tuple2<Double, Double>>> collection = joined.collect();
+        // Filter out everything except the entries with the correct Indicator Code
+        List<List<Tuple2<String, Tuple2<Double, Double>>>> RDDs = new ArrayList<>(5);
 
-        System.out.println("Number of Tuples = " + joined.count());
-        for (Tuple2<String , Tuple2<Double, Double>> tuple : collection) {
-            if (tuple._1.contains("ARB"))
+        for (int i = 0; i < indicators.length; i++) {
+
+            //Filter out everything except one code
+            JavaRDD<String> filtered = filterByIndicatorCode(initialFilter, indicators[i]);
+
+            //Map the RDD to KEY VALUE pair
+            JavaPairRDD<String, Double> paired = pair(filtered);
+
+            //JOIN the RDD to the CO2 RDD
+            JavaPairRDD<String, Tuple2<Double, Double>> joined = paired.join(pairCO2);
+
+            //Collect the output
+            RDDs.add(i, joined.collect());
+        }
+
+        for (List<Tuple2<String, Tuple2<Double, Double>>> collection : RDDs) {
+            for (int i = 0; i < 25; i++) {
+                Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(i);
                 System.out.println(tuple._1 + " (" + tuple._2._1 + "," + tuple._2._2 + ")");
+            }
         }
     }
 
@@ -84,5 +87,37 @@ public class SparkHelloWorld {
 
             return new Tuple2<>(key, value);
         });
+    }
+
+    private static JavaRDD<String> filterByIndicatorCode(JavaRDD rdd, String indicatorCode) {
+        JavaRDD<String> ret = rdd.filter((Function<String, Boolean>) line -> {
+
+            //split the line into tokens
+            String[] tokens = line.split(",", -1);
+
+            //If the token has a value, return true if it has the correct code
+            return tokens[3] != null && tokens[3].equals(indicatorCode);
+        });
+
+        return ret;
+    }
+
+    private static JavaRDD<String> filterByCodes(JavaRDD rdd, String[] codes) {
+        JavaRDD<String> ret = rdd.filter((Function<String, Boolean>) line -> {
+
+            //split the line into tokens
+            String[] tokens = line.split(",", -1);
+
+            //If the token has a value, return true if it has the correct code
+            boolean contains = false;
+            for (String code : codes) {
+                if (tokens[3].equals(code))
+                    contains = true;
+            }
+
+            return tokens[3] != null && contains;
+        });
+
+        return ret;
     }
 }
