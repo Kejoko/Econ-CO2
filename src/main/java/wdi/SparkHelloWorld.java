@@ -38,7 +38,7 @@ public class SparkHelloWorld {
         //set up CO2 RDD
         JavaRDD<String> filterByCO2 = filterByIndicatorCode(stringJavaRDD, CO2IndicatorCode);
         JavaPairRDD<String, Double> pairCO2 = pair(-1, filterByCO2);
-        co2Mean = co2Sum / co2Count;
+        co2Mean = co2Sum / (double)co2Count;
         //normalize values first so that join already has normalized values
         JavaPairRDD<String, Double> normalizedCO2 = normalize(pairCO2);
 
@@ -55,7 +55,7 @@ public class SparkHelloWorld {
 
             //Map the RDD to KEY VALUE pair
             JavaPairRDD<String, Double> paired = pair(i, filtered);
-            means[i] = sums[i] / counts[i];
+            means[i] = sums[i] / (double)(counts[i]);
 
             //Normalize the data
             JavaPairRDD<String, Double> normalized = normalize(paired);
