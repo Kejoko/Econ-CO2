@@ -15,6 +15,12 @@ import java.util.Comparator;
 import java.util.List;
 
 public class SparkHelloWorld {
+	
+	static double co2Sum = 0;
+	static double sums[] = {0, 0, 0, 0, 0};
+	static int co2Count = 0;
+	static int counts[] = {0, 0, 0, 0, 0};
+	
     public static void main(String[] args) throws IOException {
     	SparkConf sparkConf = new SparkConf().setAppName("Spark Hello World").setMaster("local");
         JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
@@ -29,7 +35,7 @@ public class SparkHelloWorld {
 
         //set up CO2 RDD
         JavaRDD<String> filterByCO2 = filterByIndicatorCode(stringJavaRDD, CO2IndicatorCode);
-        JavaPairRDD<String, Double> pairCO2 = pair(filterByCO2);
+        JavaPairRDD<String, Double> pairCO2 = pair(-1, filterByCO2);
         //normalize values first so that join already has normalized values
         JavaPairRDD<String, Double> normalizedCO2 = normalize(pairCO2);
 
@@ -45,7 +51,7 @@ public class SparkHelloWorld {
             JavaRDD<String> filtered = filterByIndicatorCode(initialFilter, indicators[i]);
 
             //Map the RDD to KEY VALUE pair
-            JavaPairRDD<String, Double> paired = pair(filtered);
+            JavaPairRDD<String, Double> paired = pair(i, filtered);
 
             //Normalize the data
             JavaPairRDD<String, Double> normalized = normalize(paired);
@@ -74,7 +80,7 @@ public class SparkHelloWorld {
     }
 
     //Method which calls MapToPair and returns an RDD with a key of Country Code and a Value
-    private static JavaPairRDD<String, Double> pair(JavaRDD<String> RDD) {
+    private static JavaPairRDD<String, Double> pair(int indicatorIndex, JavaRDD<String> RDD) {
         return RDD.mapToPair((PairFunction<String, String, Double>) line -> {
 
             //split the line into tokens
@@ -83,10 +89,15 @@ public class SparkHelloWorld {
             //Get the country code
             String countryCode = tokens[1];
             String year = tokens[4];
-            if (countryCode == null || countryCode.length() == 0)
+            boolean shouldUpdate = true;
+            if (countryCode == null || countryCode.length() == 0) {
                 countryCode = "BadCode";
-            if (year == null || year.length() == 0)
+                shouldUpdate = false;
+            }
+            if (year == null || year.length() == 0) {
                 year = "BadYear";
+                shouldUpdate = false;
+            }
 
             String key = countryCode+year;
 
@@ -99,9 +110,21 @@ public class SparkHelloWorld {
             {
                 value = 0.0;
             }
+            
+            if (shouldUpdate) {
+            	if (indicatorIndex == -1) {
+            		co2Sum += value;
+            		co2Count++;
+            	} else {
+            		sums[indicatorIndex] += value;
+            		counts[indicatorIndex]++;
+            	}
+            }
 
             return new Tuple2<>(key, value);
         });
+        
+        // Filter out the bad codes
     }
 
     private static JavaRDD<String> filterByIndicatorCode(JavaRDD rdd, String indicatorCode) {
