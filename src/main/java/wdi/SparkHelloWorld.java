@@ -6,6 +6,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
+import scala.Serializable;
 import scala.Tuple2;
 
 import java.io.IOException;
@@ -135,8 +136,8 @@ public class SparkHelloWorld {
     }
 
     private static JavaPairRDD<String, Double> normalize(JavaPairRDD<String, Double> paired) {
-        Tuple2<String, Double> maxVal = paired.max((o1, o2) -> (int) (o1._2 - o2._2));
-        Tuple2<String, Double> minVal = paired.min((o1, o2) -> (int) (o1._2 - o2._2));
+        Tuple2<String, Double> maxVal = paired.max(new compareTuple());
+        Tuple2<String, Double> minVal = paired.min(new compareTuple());
 
         Double denominator = maxVal._2 - minVal._2;
 
@@ -148,5 +149,12 @@ public class SparkHelloWorld {
         });
 
         return ret;
+    }
+}
+
+class compareTuple implements Serializable, Comparator<Tuple2<String, Double>> {
+    @Override
+    public int compare(Tuple2<String, Double> o1, Tuple2<String, Double> o2) {
+        return Double.compare(o1._2(), o2._2());
     }
 }
