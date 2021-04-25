@@ -20,7 +20,7 @@ This is a term project for CS 455 Distributed Systems. This project examines wor
 1. Run: `source init.sh`
     * This downloads and sets up spark
     
-#### Regular setup
+#### Run the spark job on the cluster
 1. Cd into this directory
 1. Run the startup script via `source startup.sh`
     * This script starts your spark cluster and exports an environment variable `SPARK_SUBMIT` making it easy to submit spark jobs
@@ -28,3 +28,7 @@ This is a term project for CS 455 Distributed Systems. This project examines wor
     * `ssh -L 49999:des-moines.cs.colostate.edu:50001 <username>@des-moines.cs.colostate.edu`
     * Navigate to `localhost:49999` in web browser
 2. Run `./runjar.sh` to submit a job to the cluster
+
+#### Run a Spark Job locally
+1. cd into `/usr/local/spark/3.0.1-with-hadoop3.2/bin`
+2. Run the command `spark-submit --class [class name] --master local [jar file path]`
