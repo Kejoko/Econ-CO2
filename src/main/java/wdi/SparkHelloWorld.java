@@ -48,13 +48,25 @@ public class SparkHelloWorld {
             //Collect the output
             RDDs.add(i, joined.collect());
         }
-
-        for (List<Tuple2<String, Tuple2<Double, Double>>> collection : RDDs) {
-            for (int i = 0; i < 25; i++) {
-                Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(i);
-                System.out.println(tuple._1 + " (" + tuple._2._1 + "," + tuple._2._2 + ")");
-            }
+        
+        for (int i = 0; i < RDDs.size(); i++) {
+        	List<Tuple2<String, Tuple2<Double, Double>>> collection = RDDs.get(i);
+        	System.out.println("\n" + indicatorNames[i]);
+        	for (int j = 0; j < 10; j++) {
+                Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(j);
+                String tupleString = String.format("%10.5d , %10.5d", tuple._2._1, tuple._2._2);
+                System.out.println(tuple._1 + " ( " + tupleString + " )");
+                
+        	}
+        	
         }
+
+//        for (List<Tuple2<String, Tuple2<Double, Double>>> collection : RDDs) {
+//            for (int i = 0; i < 25; i++) {
+//                Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(i);
+//                System.out.println(tuple._1 + " (" + tuple._2._1 + "," + tuple._2._2 + ")");
+//            }
+//        }
     }
 
     //Method which calls MapToPair and returns an RDD with a key of Country Code and a Value
