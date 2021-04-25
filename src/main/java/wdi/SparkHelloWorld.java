@@ -195,9 +195,6 @@ public class SparkHelloWorld {
     }
     
     private static double calculateCorrelationCoefficient(JavaPairRDD<String, Tuple2<Double, Double>> rdd, double co2Mean, double econMean) {
-    	// Where x is economic value
-    	// Where y is co2 value
-    	// Sum for all i: (xi - xmean)(yi - ymean)
     	List<Tuple2<String, Tuple2<Double, Double>>> list = rdd.collect();
     	
     	double numeratorSum = 0.0;
