@@ -44,6 +44,7 @@ public class SparkHelloWorld {
         List<List<Tuple2<String, Tuple2<Double, Double>>>> data = new ArrayList<>(5);
 
         double[][] meanInfo = new double[indicators.length][3];
+        double[] corrCoeffs = new double[indicators.length];
         for (int i = 0; i < indicators.length; i++) {
 
             //Filter out everything except one code
@@ -64,7 +65,7 @@ public class SparkHelloWorld {
 
             //calculate coefficient
             //pass collection to function... put coefficient on array or something
-            double correlationCoefficient = calculateCorrelationCoefficient(joined, co2Info[2], meanInfo[i][2]);
+            corrCoeffs[i] = calculateCorrelationCoefficient(joined, co2Info[2], meanInfo[i][2]);
 
         }
         
@@ -79,6 +80,7 @@ public class SparkHelloWorld {
         	System.out.println("Count: " + meanInfo[i][0]);
         	System.out.println("Sum: " + meanInfo[i][1]);
         	System.out.println("Mean: " + meanInfo[i][2]);
+        	System.out.println("Correlation Coefficient: " + corrCoeffs[i]);
         	for (int j = 0; j < 10; j++) {
                 Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(j);
                 String tupleString = String.format("%8.7f , %8.7f", tuple._2._1, tuple._2._2);
@@ -196,8 +198,24 @@ public class SparkHelloWorld {
     	// Where x is economic value
     	// Where y is co2 value
     	// Sum for all i: (xi - xmean)(yi - ymean)
+    	List<Tuple2<String, Tuple2<Double, Double>>> list = rdd.collect();
     	
-    	return 0;
+    	double numeratorSum = 0.0;
+    	double denomSumX = 0.0;
+    	double denomSumY = 0.0;
+    	
+    	for (Tuple2<String, Tuple2<Double, Double>> bigTuple : list) {
+    		double x = bigTuple._2._1;
+    		double y = bigTuple._2._2;
+    		double diffX = x - econMean;
+    		double diffY = y - co2Mean;
+    		
+    		numeratorSum += diffX * diffY;
+    		denomSumX += diffX * diffX;
+    		denomSumY += diffY * diffY;
+    	}
+    	
+    	return numeratorSum / (Math.sqrt(denomSumX) * Math.sqrt(denomSumY));
     }
 }
 
