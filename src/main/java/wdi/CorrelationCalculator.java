@@ -16,12 +16,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class SparkHelloWorld {
+public class CorrelationCalculator {
     static final String[] indicators = { "TX.VAL.MRCH.CD.WT", "TM.VAL.MRCH.CD.WT", "TG.VAL.TOTL.GD.ZS", "NY.GDP.PCAP.CD", "NY.GNP.MKTP.CD"};
     static final String[] indicatorNames = { "Merchandise Exports $US", "Merchandise Imports $US", "Merchandise Trade % of GDP", "GDP per capita $US", "GNI $US"};
     static final String CO2IndicatorCode = "EN.ATM.CO2E.PC";
 	
-    //First value will be CO2, then the rest of the indicators in order
+    // Minimum and maximum values in the datasets
     static double co2Max;
     static double co2Min;
     static double[] maximums = new double[indicators.length];
@@ -31,12 +31,19 @@ public class SparkHelloWorld {
     static double[] co2Qs = new double[5];
     static double[][] econQs = new double[indicators.length][5];
     
+    static class compareTuple implements Serializable, Comparator<Tuple2<String, Double>> {
+        @Override
+        public int compare(Tuple2<String, Double> o1, Tuple2<String, Double> o2) {
+            return Double.compare(o1._2(), o2._2());
+        }
+    }
+    
     public static void main(String[] args) throws IOException {
     	String homeDir = args[0];
     	boolean normalize = false;
     	if (args.length > 1 && args[1].equals("true")) normalize = true;
     	
-    	SparkConf sparkConf = new SparkConf().setAppName("Spark Hello World").setMaster("local");
+    	SparkConf sparkConf = new SparkConf().setAppName("Economic indicators correlation to CO2 emssions").setMaster("local");
         JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
         JavaRDD<String> stringJavaRDD = sparkContext.textFile("file://" + homeDir + "/WDIDataset/Indicators.csv");
 
@@ -368,9 +375,3 @@ public class SparkHelloWorld {
     }
 }
 
-class compareTuple implements Serializable, Comparator<Tuple2<String, Double>> {
-    @Override
-    public int compare(Tuple2<String, Double> o1, Tuple2<String, Double> o2) {
-        return Double.compare(o1._2(), o2._2());
-    }
-}
