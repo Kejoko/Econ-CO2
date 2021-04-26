@@ -70,7 +70,8 @@ public class SparkHelloWorld {
             econInfo[i] = calculateMean(trimmed);
 
             //JOIN the RDD to the CO2 RDD
-            JavaPairRDD<String, Tuple2<Double, Double>> joined = normalized.join(normalizedCO2);
+//            JavaPairRDD<String, Tuple2<Double, Double>> joined = normalized.join(normalizedCO2);
+            JavaPairRDD<String, Tuple2<Double, Double>> joined = trimmed.join(trimmedCO2);
 
             //Collect the output
             data.add(i, joined.collect());
