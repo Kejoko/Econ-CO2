@@ -93,7 +93,7 @@ public class SparkHelloWorld {
         	System.out.println("Correlation Coefficient: " + corrCoeffs[i]);
         	for (int j = 0; j < 10; j++) {
                 Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(j);
-                String tupleString = String.format("%8.7f , %8.7f", tuple._2._1, tuple._2._2);
+                String tupleString = String.format("%20.5f , %8.7f", tuple._2._1, tuple._2._2);
                 System.out.println(tuple._1 + " ( " + tupleString + " )");
         	}
         }
