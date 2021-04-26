@@ -104,7 +104,7 @@ public class SparkHelloWorld {
         	System.out.println("Correlation Coefficient: " + corrCoeffs[i]);
         	for (int j = 0; j < 10; j++) {
                 Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(j);
-                String tupleString = String.format("%20.5f , %8.7f", tuple._2._1, tuple._2._2);
+                String tupleString = String.format("%20.5f , %8.5f", tuple._2._1, tuple._2._2);
                 System.out.println(tuple._1 + " ( " + tupleString + " )");
         	}
         }
@@ -235,40 +235,31 @@ public class SparkHelloWorld {
     }
     
     private static double calculateMedian(List<Tuple2<String, Double>> list, int startIndex, int endIndex) {
-    	System.out.println("[ " + startIndex + " , " + endIndex + " )");
     	int size = endIndex - startIndex;
-    	System.out.println("size: " + size);
     	
     	double median;
+    	
     	if (size % 2 == 0) {
     		int firstMedianOffset = (size / 2) - 1;
     		int secondMedianOffset = size / 2;
     		double firstMedian = list.get(startIndex + firstMedianOffset)._2;
     		double secondMedian = list.get(startIndex + secondMedianOffset)._2;
-        	System.out.println("offset1: " + firstMedianOffset);
-        	System.out.println("index1: " + (startIndex + firstMedianOffset));
-        	System.out.println("offset2: " + secondMedianOffset);
-        	System.out.println("index2: " + (startIndex + secondMedianOffset));
         	
     		median = (firstMedian + secondMedian) / 2;
     	} else {
     		int medianOffset = Math.floorDiv(size, 2);
-        	System.out.println("offset: " + medianOffset);
-        	System.out.println("index: " + (startIndex + medianOffset));
+    		
     		median = list.get(startIndex + medianOffset)._2;
     	}
-    	System.out.println("median: " + median);
+    	
     	return median;
     }
     
     private static JavaPairRDD<String, Double> removeOutliers(int indicatorIndex, JavaPairRDD<String, Double> rdd) {
     	List<Tuple2<String, Double>> list = rdd.collect();
-    	System.out.println("\n\n\n\n\nCALCULATING MEDIAN, Q1, Q3");
     	int size = list.size();
-    	System.out.println("Size: " + size);
     	
     	// Calculate Q2
-    	System.out.println("----- Q2 -----");
     	double median = calculateMedian(list, 0, size);
     	
     	// Calculate Q1 and Q3
@@ -278,9 +269,7 @@ public class SparkHelloWorld {
     	} else {
     		sublistSize = (size - 1) / 2;
     	}
-    	System.out.println("----- Q1 -----");
     	double q1 = calculateMedian(list, 0, sublistSize);
-    	System.out.println("----- Q3 -----");
     	double q3 = calculateMedian(list, size - sublistSize, size);
     	
     	// Calculate IQR and tolerances
@@ -298,8 +287,12 @@ public class SparkHelloWorld {
     		econQs[indicatorIndex][2] = q3;
     	}
     	
-    	System.out.println("\n\n\n");
-    	return rdd;
+    	JavaPairRDD<String, Double> filtered = rdd.filter((Function<Tuple2<String, Double>, Boolean>) pair -> {
+    		if (pair._2 < lowTolerance || pair._2 > highTolerance) return false;
+    		return true;
+    	});
+    	
+    	return filtered;
     }
     
     private static double[] calculateMean(JavaPairRDD<String, Double> rdd) {
