@@ -62,7 +62,7 @@ public class SparkHelloWorld {
         JavaRDD<String> initialFilter = filterByCodes(stringJavaRDD, indicators);
 
         // Filter out everything except the entries with the correct Indicator Code
-        List<List<Tuple2<String, Tuple2<Double, Double>>>> data = new ArrayList<>(5);
+        List<List<Tuple2<String, Tuple2<Double, Double>>>> data = new ArrayList<>(indicators.length);
 
         double[][] meanInfo = new double[indicators.length][3];
         double[] corrCoeffs = new double[indicators.length];
