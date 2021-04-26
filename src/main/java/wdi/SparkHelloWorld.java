@@ -229,8 +229,8 @@ public class SparkHelloWorld {
 
         JavaPairRDD<String, Double> ret = paired.mapToPair((PairFunction<Tuple2<String, Double>, String, Double>) data -> {
 
-//            Double norm = (data._2 - minVal) / denominator;
-            Double norm = (data._2 - mean) / denominator;
+            Double norm = (data._2 - minVal) / denominator;
+//            Double norm = (data._2 - mean) / denominator;
 
             return new Tuple2<>(data._1, norm);
         });
