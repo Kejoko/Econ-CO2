@@ -16,23 +16,36 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class SparkHelloWorld {
-    static String[] indicators = { "TX.VAL.MRCH.CD.WT", "TM.VAL.MRCH.CD.WT", "TG.VAL.TOTL.GD.ZS", "NY.GDP.PCAP.CD", "NY.GNP.MKTP.CD"};
-    static String[] indicatorNames = { "Merchandise Exports $US", "Merchandise Imports $US", "Merchandise Trade % of GDP", "GDP per capita $US", "GNI $US"};
-    static String CO2IndicatorCode = "EN.ATM.CO2E.PC";
+public class CorrelationCalculator {
+    static final String[] indicators = { "TX.VAL.MRCH.CD.WT", "TM.VAL.MRCH.CD.WT", "TG.VAL.TOTL.GD.ZS", "NY.GDP.PCAP.CD", "NY.GNP.MKTP.CD"};
+    static final String[] indicatorNames = { "Merchandise Exports $US", "Merchandise Imports $US", "Merchandise Trade % of GDP", "GDP per capita $US", "GNI $US"};
+    static final String CO2IndicatorCode = "EN.ATM.CO2E.PC";
 	
-    //First value will be CO2, then the rest of the indicators in order
-    static List<Double> maximums = new ArrayList<>();
-    static List<Double> minimums = new ArrayList<>();
+    // Minimum and maximum values in the datasets
+    static double co2Max;
+    static double co2Min;
+    static double[] maximums = new double[indicators.length];
+    static double[] minimums = new double[indicators.length];
     
     // The box plot information for each of the indicators
     static double[] co2Qs = new double[5];
     static double[][] econQs = new double[indicators.length][5];
     
+    static class compareTuple implements Serializable, Comparator<Tuple2<String, Double>> {
+        @Override
+        public int compare(Tuple2<String, Double> o1, Tuple2<String, Double> o2) {
+            return Double.compare(o1._2(), o2._2());
+        }
+    }
+    
     public static void main(String[] args) throws IOException {
-    	SparkConf sparkConf = new SparkConf().setAppName("Spark Hello World").setMaster("local");
+    	String homeDir = args[0];
+    	boolean normalize = false;
+    	if (args.length > 1 && args[1].equals("true")) normalize = true;
+    	
+    	SparkConf sparkConf = new SparkConf().setAppName("Economic indicators correlation to CO2 emssions").setMaster("local");
         JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
-        JavaRDD<String> stringJavaRDD = sparkContext.textFile("file://" + args[0] + "/WDIDataset/Indicators.csv");
+        JavaRDD<String> stringJavaRDD = sparkContext.textFile("file://" + homeDir + "/WDIDataset/Indicators.csv");
 
         //TEST RUN FOR MERCHANDISE EXPORTS (TX.VAL.MRCH.CD.WT)
         //CO2 EN.ATM.CO2E.PC
@@ -43,14 +56,20 @@ public class SparkHelloWorld {
         JavaPairRDD<String, Double> sortedCO2 = sortByValue(pairCO2);
         
         // Transform the CO2 data and calculate the relevant information
-        JavaPairRDD<String, Double> trimmedCO2 = removeOutliers(-1, sortedCO2);
-        JavaPairRDD<String, Double> normalizedCO2 = featureScale(trimmedCO2);
-        double[] co2Info = calculateMean(trimmedCO2);
-//        JavaPairRDD<String, Double> normalizedCO2 = featureScale(sortedCO2);
-//        JavaPairRDD<String, Double> trimmedCO2 = removeOutliers(-1, normalizedCO2);
-//        double[] co2Info = calculateMean(trimmedCO2);
+        JavaPairRDD<String, Double> trimmedCO2;
+        double[] co2Info;
+        if (!normalize) {
+		    trimmedCO2 = removeOutliers(-1, sortedCO2);
+		    co2Min = trimmedCO2.min(new compareTuple())._2;
+		    co2Max = trimmedCO2.max(new compareTuple())._2;
+		    co2Info = calculateMean(trimmedCO2);
+        } else {
+	        JavaPairRDD<String, Double> normalizedCO2 = featureScale(-1, sortedCO2);
+	        trimmedCO2 = removeOutliers(-1, normalizedCO2);
+	        co2Info = calculateMean(trimmedCO2);
+        }
 
-        //Filter by all relevant codes
+        // Filter by all relevant codes
         JavaRDD<String> initialFilter = filterByCodes(stringJavaRDD, indicators);
 
         // Filter out everything except the entries with the correct Indicator Code
@@ -60,41 +79,46 @@ public class SparkHelloWorld {
         double[] corrCoeffs = new double[indicators.length];
         for (int i = 0; i < indicators.length; i++) {
 
-            //Filter out everything except one code
+            // Filter out everything except one code
             JavaRDD<String> filtered = filterByIndicatorCode(initialFilter, indicators[i]);
 
-            //Map the RDD to KEY VALUE pair
+            // Map the RDD to KEY VALUE pair
             JavaPairRDD<String, Double> paired = pair(filtered);
             JavaPairRDD<String, Double> sorted = sortByValue(paired);
 
-            //Normalize the data
-            JavaPairRDD<String, Double> trimmed = removeOutliers(i, sorted);
-            JavaPairRDD<String, Double> normalized = featureScale(trimmed);
-            econInfo[i] = calculateMean(trimmed);
-//            JavaPairRDD<String, Double> normalized = featureScale(sorted);
-//            JavaPairRDD<String, Double> trimmed = removeOutliers(i, normalized);
-//            econInfo[i] = calculateMean(trimmed);
+            // Transform the data
+            JavaPairRDD<String, Double> trimmed;
+            if (!normalize) {
+	            trimmed = removeOutliers(i, sorted);
+	            minimums[i] = trimmed.min(new compareTuple())._2;
+	            maximums[i] = trimmed.max(new compareTuple())._2;
+	            econInfo[i] = calculateMean(trimmed);
+            } else { 
+	            JavaPairRDD<String, Double> normalized = featureScale(i, sorted);
+	            trimmed = removeOutliers(i, normalized);
+	            econInfo[i] = calculateMean(trimmed);
+            }
 
-            //JOIN the RDD to the CO2 RDD
+            // JOIN the RDD to the CO2 RDD
 //            JavaPairRDD<String, Tuple2<Double, Double>> joined = normalized.join(normalizedCO2);
             JavaPairRDD<String, Tuple2<Double, Double>> joined = trimmed.join(trimmedCO2);
 
-            //Collect the output
+            // Collect the output
             data.add(i, joined.collect());
 
-            //calculate coefficient
+            // Calculate coefficient
             corrCoeffs[i] = calculateCorrelationCoefficient(joined, co2Info[2], econInfo[i][2]);
         }
         
         // Report all of the relevant information
         System.out.println("CO2 emissions metric tons per capita");
-        System.out.println("Min:   " + String.format("%25.6f", minimums.get(0)));
+        System.out.println("Min:   " + String.format("%25.6f", co2Min));
         System.out.println("Low:   " + String.format("%25.6f", co2Qs[3]));
         System.out.println("Q1:    " + String.format("%25.6f", co2Qs[0]));
         System.out.println("Med:   " + String.format("%25.6f", co2Qs[1]));
         System.out.println("Q3:    " + String.format("%25.6f", co2Qs[2]));
         System.out.println("High:  " + String.format("%25.6f", co2Qs[4]));
-        System.out.println("Max:   " + String.format("%25.6f", maximums.get(0)));
+        System.out.println("Max:   " + String.format("%25.6f", co2Max));
         System.out.println("Count: " + String.format("%25.6f", co2Info[0]));
         System.out.println("Sum:   " + String.format("%25.6f", co2Info[1]));
         System.out.println("Mean:  " + String.format("%25.6f", co2Info[2]));
@@ -102,13 +126,13 @@ public class SparkHelloWorld {
         for (int i = 0; i < data.size(); i++) {
         	List<Tuple2<String, Tuple2<Double, Double>>> collection = data.get(i);
         	System.out.println("\n" + indicatorNames[i]);
-            System.out.println("Min:   " + String.format("%25.6f", minimums.get(i+1)));
+            System.out.println("Min:   " + String.format("%25.6f", minimums[i]));
             System.out.println("Low:   " + String.format("%25.6f", econQs[i][3]));
             System.out.println("Q1:    " + String.format("%25.6f", econQs[i][0]));
             System.out.println("Med:   " + String.format("%25.6f", econQs[i][1]));
             System.out.println("Q3:    " + String.format("%25.6f", econQs[i][2]));
             System.out.println("High:  " + String.format("%25.6f", econQs[i][4]));
-            System.out.println("Max:   " + String.format("%25.6f", maximums.get(i+1)));
+            System.out.println("Max:   " + String.format("%25.6f", maximums[i]));
             System.out.println("Count: " + String.format("%25.6f", econInfo[i][0]));
             System.out.println("Sum:   " + String.format("%25.6f", econInfo[i][1]));
             System.out.println("Mean:  " + String.format("%25.6f", econInfo[i][2]));
@@ -217,19 +241,23 @@ public class SparkHelloWorld {
     	return sorted;
     }
 
-    private static JavaPairRDD<String, Double> featureScale(JavaPairRDD<String, Double> paired) {
+    private static JavaPairRDD<String, Double> featureScale(int indicatorIndex, JavaPairRDD<String, Double> paired) {
         double maxVal = paired.max(new compareTuple())._2;
         double minVal = paired.min(new compareTuple())._2;
-
-        maximums.add(maxVal);
-        minimums.add(minVal);
+        
+        if (indicatorIndex == -1) {
+        	co2Max = maxVal;
+        	co2Min = minVal;
+        } else {
+        	maximums[indicatorIndex] = maxVal;
+        	minimums[indicatorIndex] = maxVal;
+        }
 
         Double denominator = maxVal - minVal;
 
         JavaPairRDD<String, Double> ret = paired.mapToPair((PairFunction<Tuple2<String, Double>, String, Double>) data -> {
 
             Double norm = (data._2 - minVal) / denominator;
-//            Double norm = (data._2 - mean) / denominator;
 
             return new Tuple2<>(data._1, norm);
         });
@@ -347,9 +375,3 @@ public class SparkHelloWorld {
     }
 }
 
-class compareTuple implements Serializable, Comparator<Tuple2<String, Double>> {
-    @Override
-    public int compare(Tuple2<String, Double> o1, Tuple2<String, Double> o2) {
-        return Double.compare(o1._2(), o2._2());
-    }
-}
