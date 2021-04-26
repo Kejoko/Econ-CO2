@@ -46,17 +46,6 @@ public class SparkHelloWorld {
         JavaPairRDD<String, Double> normalizedCO2 = removeOutliers(-1, normallyDistribute(sortedCO2));
         JavaPairRDD<String, Double> featureScaledCO2 = featureScale(normalizedCO2);
         double[] co2Info = calculateMean(normalizedCO2);
-        
-        // Report all of the relevant information
-        System.out.println("CO2 emissions metric tons per capita");
-        System.out.println("Min:   " + String.format("%25.6f", minimums.get(0)._2));
-        System.out.println("Q1:    " + String.format("%25.6f", co2Qs[0]));
-        System.out.println("Med:   " + String.format("%25.6f", co2Qs[1]));
-        System.out.println("Q3:    " + String.format("%25.6f", co2Qs[2]));
-        System.out.println("Max:   " + String.format("%25.6f", maximums.get(0)._2));
-        System.out.println("Count: " + String.format("%25.6f", co2Info[0]));
-        System.out.println("Sum:   " + String.format("%25.6f", co2Info[1]));
-        System.out.println("Mean:  " + String.format("%25.6f", co2Info[2]));
 
         //Filter by all relevant codes
         JavaRDD<String> initialFilter = filterByCodes(stringJavaRDD, indicators);
@@ -88,7 +77,20 @@ public class SparkHelloWorld {
 
             //calculate coefficient
             corrCoeffs[i] = calculateCorrelationCoefficient(joined, co2Info[2], meanInfo[i][2]);
-            
+        }
+        
+        // Report all of the relevant information
+        System.out.println("CO2 emissions metric tons per capita");
+        System.out.println("Min:   " + String.format("%25.6f", minimums.get(0)._2));
+        System.out.println("Q1:    " + String.format("%25.6f", co2Qs[0]));
+        System.out.println("Med:   " + String.format("%25.6f", co2Qs[1]));
+        System.out.println("Q3:    " + String.format("%25.6f", co2Qs[2]));
+        System.out.println("Max:   " + String.format("%25.6f", maximums.get(0)._2));
+        System.out.println("Count: " + String.format("%25.6f", co2Info[0]));
+        System.out.println("Sum:   " + String.format("%25.6f", co2Info[1]));
+        System.out.println("Mean:  " + String.format("%25.6f", co2Info[2]));
+        
+        for (int i = 0; i < data.size(); i++) {
         	List<Tuple2<String, Tuple2<Double, Double>>> collection = data.get(i);
         	System.out.println("\n" + indicatorNames[i]);
             System.out.println("Min:   " + String.format("%25.6f", minimums.get(i+1)._2));
@@ -106,10 +108,6 @@ public class SparkHelloWorld {
                 System.out.println(tuple._1 + " ( " + tupleString + " )");
         	}
         }
-        
-//        for (int i = 0; i < data.size(); i++) {
-//
-//        }
     }
 
     //Method which calls MapToPair and returns an RDD with a key of Country Code and a Value
@@ -237,27 +235,41 @@ public class SparkHelloWorld {
     }
     
     private static double calculateMedian(List<Tuple2<String, Double>> list, int startIndex, int endIndex) {
+    	System.out.println("[ " + startIndex + " , " + endIndex + " )");
     	int size = endIndex - startIndex;
+    	System.out.println("size: " + size);
     	
+    	double median;
     	if (size % 2 == 0) {
     		int firstMedianOffset = (size / 2) - 1;
     		int secondMedianOffset = size / 2;
     		double firstMedian = list.get(startIndex + firstMedianOffset)._2;
     		double secondMedian = list.get(startIndex + secondMedianOffset)._2;
-    		return (firstMedian + secondMedian) / 2;
+        	System.out.println("offset1: " + firstMedianOffset);
+        	System.out.println("index1: " + (startIndex + firstMedianOffset));
+        	System.out.println("offset2: " + secondMedianOffset);
+        	System.out.println("index2: " + (startIndex + secondMedianOffset));
+        	
+    		median = (firstMedian + secondMedian) / 2;
     	} else {
     		int medianOffset = Math.floorDiv(endIndex, 2);
-    		return list.get(startIndex + medianOffset)._2;
+        	System.out.println("offset: " + medianOffset);
+        	System.out.println("index: " + (startIndex + medianOffset));
+    		median = list.get(startIndex + medianOffset)._2;
     	}
+    	System.out.println("median: " + median);
+    	return median;
     }
     
     private static JavaPairRDD<String, Double> removeOutliers(int indicatorIndex, JavaPairRDD<String, Double> rdd) {
-    	
+    	System.out.println("\n\n\n\n\nCALCULATING MEDIAN, Q1, Q3");
     	List<Tuple2<String, Double>> list = rdd.collect();
     	int size = list.size();
+    	System.out.println("Size: " + size);
     	
     	// Calculate Q2
-    	double q2 = calculateMedian(list, 0, size);
+    	System.out.println("----- Q2 -----");
+    	double median = calculateMedian(list, 0, size);
     	
     	// Calculate Q1 and Q3
     	int sublistSize;
@@ -266,7 +278,9 @@ public class SparkHelloWorld {
     	} else {
     		sublistSize = (size - 1) / 2;
     	}
+    	System.out.println("----- Q1 -----");
     	double q1 = calculateMedian(list, 0, sublistSize);
+    	System.out.println("----- Q3 -----");
     	double q3 = calculateMedian(list, size - sublistSize, size);
     	
     	// Calculate IQR and tolerances
@@ -276,14 +290,15 @@ public class SparkHelloWorld {
     	
     	if (indicatorIndex == -1) {
     		co2Qs[0] = q1;
-    		co2Qs[1] = q2;
+    		co2Qs[1] = median;
     		co2Qs[2] = q3;
     	} else {
     		econQs[indicatorIndex][0] = q1;
-    		econQs[indicatorIndex][1] = q2;
+    		econQs[indicatorIndex][1] = median;
     		econQs[indicatorIndex][2] = q3;
     	}
     	
+    	System.out.println("\n\n\n");
     	return rdd;
     }
     
