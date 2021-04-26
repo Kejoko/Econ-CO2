@@ -237,13 +237,6 @@ public class SparkHelloWorld {
         return ret;
     }
     
-    private static JavaPairRDD<String, Double> normallyDistribute(JavaPairRDD<String, Double> rdd) {
-    	
-    	
-    	
-    	return rdd;
-    }
-    
     private static double calculateMedian(List<Tuple2<String, Double>> list, int startIndex, int endIndex) {
     	int size = endIndex - startIndex;
     	
