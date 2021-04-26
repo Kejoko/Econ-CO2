@@ -95,8 +95,8 @@ public class SparkHelloWorld {
         for (int i = 0; i < data.size(); i++) {
         	List<Tuple2<String, Tuple2<Double, Double>>> collection = data.get(i);
         	System.out.println("\n" + indicatorNames[i]);
-            System.out.println("Low:   " + String.format("%25.6f", minimums.get(i+1)._2));
-            System.out.println("Q3:    " + String.format("%25.6f", econQs[i][3]));
+            System.out.println("Min:   " + String.format("%25.6f", minimums.get(i+1)._2));
+            System.out.println("Low:   " + String.format("%25.6f", econQs[i][3]));
             System.out.println("Q1:    " + String.format("%25.6f", econQs[i][0]));
             System.out.println("Med:   " + String.format("%25.6f", econQs[i][1]));
             System.out.println("Q3:    " + String.format("%25.6f", econQs[i][2]));
