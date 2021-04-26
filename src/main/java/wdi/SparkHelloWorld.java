@@ -33,11 +33,14 @@ public class SparkHelloWorld {
         String[] indicatorNames = { "Merchandise Exports $US", "Merchandise Imports $US", "Merchandise Trade % of GDP", "GDP per capita $US", "GNI $US"};
         String CO2IndicatorCode = "EN.ATM.CO2E.PC";
 
-        //set up CO2 RDD
+        // Get the CO2 data and sort it
         JavaRDD<String> filterByCO2 = filterByIndicatorCode(stringJavaRDD, CO2IndicatorCode);
         JavaPairRDD<String, Double> pairCO2 = pair(filterByCO2);
-        //normalize values first so that join already has normalized values
-        JavaPairRDD<String, Double> normalizedCO2 = normalize(pairCO2);
+        JavaPairRDD<String, Double> sortedCO2 = sortByValue(pairCO2);
+        
+        // Transform the CO2 data and calculate the relevant information
+//        JavaPairRDD<String, Double> normalizedCO2 = featureScale(sortedCO2);
+        JavaPairRDD<String, Double> normalizedCO2 = removeOutliers(normallyDistribute(sortedCO2));
         double[] co2Info = calculateMean(normalizedCO2);
 
         //Filter by all relevant codes
@@ -55,9 +58,11 @@ public class SparkHelloWorld {
 
             //Map the RDD to KEY VALUE pair
             JavaPairRDD<String, Double> paired = pair(filtered);
+            JavaPairRDD<String, Double> sorted = sortByValue(paired);
 
             //Normalize the data
-            JavaPairRDD<String, Double> normalized = normalize(paired);
+//            JavaPairRDD<String, Double> normalized = featureScale(sorted);
+            JavaPairRDD<String, Double> normalized = removeOutliers(normallyDistribute(sorted));
             meanInfo[i] = calculateMean(normalized);
 
             //JOIN the RDD to the CO2 RDD
@@ -67,7 +72,6 @@ public class SparkHelloWorld {
             data.add(i, joined.collect());
 
             //calculate coefficient
-            //pass collection to function... put coefficient on array or something
             corrCoeffs[i] = calculateCorrelationCoefficient(joined, co2Info[2], meanInfo[i][2]);
         }
         
@@ -167,8 +171,33 @@ public class SparkHelloWorld {
 
         return ret;
     }
+    
+    private static JavaPairRDD<String, Double> sortByValue(JavaPairRDD<String, Double> rdd) {
+    	// Swap the key and value in rdd
+    	JavaPairRDD<Double, String> swapped = rdd.mapToPair(
+    			new PairFunction<Tuple2<String, Double>, Double, String>() {
+		            @Override
+		            public Tuple2<Double, String> call(Tuple2<String, Double> item) throws Exception {
+		                return item.swap();
+		            }
+    			});
+    	
+    	// Sort the swapped rdd by key
+    	JavaPairRDD<Double, String> swappedSorted = swapped.sortByKey(true);
+    	
+    	// Swap it back
+    	JavaPairRDD<String, Double> sorted = swappedSorted.mapToPair(
+    			new PairFunction<Tuple2<Double, String>, String, Double>() {
+    				@Override
+    				public Tuple2<String, Double> call(Tuple2<Double, String> item) throws Exception {
+    					return item.swap();
+    				}
+    			});
+    	
+    	return sorted;
+    }
 
-    private static JavaPairRDD<String, Double> normalize(JavaPairRDD<String, Double> paired) {
+    private static JavaPairRDD<String, Double> featureScale(JavaPairRDD<String, Double> paired) {
         Tuple2<String, Double> maxVal = paired.max(new compareTuple());
         Tuple2<String, Double> minVal = paired.min(new compareTuple());
 
@@ -185,6 +214,31 @@ public class SparkHelloWorld {
         });
 
         return ret;
+    }
+    
+    private static JavaPairRDD<String, Double> normallyDistribute(JavaPairRDD<String, Double> rdd) {
+    	
+    	
+    	
+    	return rdd;
+    }
+    
+    private static JavaPairRDD<String, Double> removeOutliers(JavaPairRDD<String, Double> rdd) {
+    	// Use Interquartile Range (IQR) to identify and remove outliers
+    	
+    	// Find 25th percentile (Q1)
+    	
+    	// Find 75th percentile (Q3)
+    	
+    	// Find the midspread (difference between 75th and 25th percentiles)
+    	// IQR = Q3 - Q1
+    	
+    	// Outlier if:
+    	// value < Q1 - 1.5 * IQR
+    	// or
+    	// value > Q3 + 1.5 * IQR
+    	
+    	return rdd;
     }
     
     private static double[] calculateMean(JavaPairRDD<String, Double> rdd) {
