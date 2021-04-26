@@ -80,26 +80,26 @@ public class SparkHelloWorld {
         }
         
         System.out.println("CO2 emissions metric tons per capita");
-        System.out.println("Min:   " + String.format("%25.10f", minimums.get(0)._2));
-        System.out.println("Q1:    " + String.format("%25.10f", co2Qs[0]));
-        System.out.println("Med:   " + String.format("%25.10f", co2Qs[1]));
-        System.out.println("Q3:    " + String.format("%25.10f", co2Qs[2]));
-        System.out.println("Max:   " + String.format("%25.10f", maximums.get(0)._2));
-        System.out.println("Count: " + String.format("%25.10f", co2Info[0]));
-        System.out.println("Sum:   " + String.format("%25.10f", co2Info[1]));
-        System.out.println("Mean:  " + String.format("%25.10f", co2Info[2]));
+        System.out.println("Min:   " + String.format("%25.6f", minimums.get(0)._2));
+        System.out.println("Q1:    " + String.format("%25.6f", co2Qs[0]));
+        System.out.println("Med:   " + String.format("%25.6f", co2Qs[1]));
+        System.out.println("Q3:    " + String.format("%25.6f", co2Qs[2]));
+        System.out.println("Max:   " + String.format("%25.6f", maximums.get(0)._2));
+        System.out.println("Count: " + String.format("%25.6f", co2Info[0]));
+        System.out.println("Sum:   " + String.format("%25.6f", co2Info[1]));
+        System.out.println("Mean:  " + String.format("%25.6f", co2Info[2]));
         
         for (int i = 0; i < data.size(); i++) {
         	List<Tuple2<String, Tuple2<Double, Double>>> collection = data.get(i);
         	System.out.println("\n" + indicatorNames[i]);
-            System.out.println("Min:   " + String.format("%25.10f", minimums.get(i+1)._2));
-            System.out.println("Q1:    " + String.format("%25.10f", econQs[i][0]));
-            System.out.println("Med:   " + String.format("%25.10f", econQs[i][1]));
-            System.out.println("Q3:    " + String.format("%25.10f", econQs[i][2]));
-            System.out.println("Max:   " + String.format("%25.10f", maximums.get(i+1)._2));
-            System.out.println("Count: " + String.format("%25.10f", meanInfo[i][0]));
-            System.out.println("Sum:   " + String.format("%25.10f", meanInfo[i][1]));
-            System.out.println("Mean:  " + String.format("%25.10f", meanInfo[i][2]));
+            System.out.println("Min:   " + String.format("%25.6f", minimums.get(i+1)._2));
+            System.out.println("Q1:    " + String.format("%25.6f", econQs[i][0]));
+            System.out.println("Med:   " + String.format("%25.6f", econQs[i][1]));
+            System.out.println("Q3:    " + String.format("%25.6f", econQs[i][2]));
+            System.out.println("Max:   " + String.format("%25.6f", maximums.get(i+1)._2));
+            System.out.println("Count: " + String.format("%25.6f", meanInfo[i][0]));
+            System.out.println("Sum:   " + String.format("%25.6f", meanInfo[i][1]));
+            System.out.println("Mean:  " + String.format("%25.6f", meanInfo[i][2]));
         	System.out.println("Correlation Coefficient: " + corrCoeffs[i]);
         	for (int j = 0; j < 10; j++) {
                 Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(j);
