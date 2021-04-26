@@ -24,7 +24,7 @@ public class SparkHelloWorld {
     public static void main(String[] args) throws IOException {
     	SparkConf sparkConf = new SparkConf().setAppName("Spark Hello World").setMaster("spark://des-moines:50000");
         JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
-        JavaRDD<String> stringJavaRDD = sparkContext.textFile("file://" + args[0] + "/Indicators.csv");
+        JavaRDD<String> stringJavaRDD = sparkContext.textFile("file://" + args[0] + "/WDIDataset/Indicators.csv");
 
         //TEST RUN FOR MERCHANDISE EXPORTS (TX.VAL.MRCH.CD.WT)
         //CO2 EN.ATM.CO2E.PC
