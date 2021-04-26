@@ -243,7 +243,7 @@ public class SparkHelloWorld {
     		double secondMedian = list.get(startIndex + secondMedianOffset)._2;
     		return (firstMedian + secondMedian) / 2;
     	} else {
-    		int medianOffset = Math.floorDiv(endIndex, size);
+    		int medianOffset = Math.floorDiv(endIndex, 2);
     		return list.get(startIndex + medianOffset)._2;
     	}
     }
