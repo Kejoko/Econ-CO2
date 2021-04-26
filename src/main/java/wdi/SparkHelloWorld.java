@@ -26,8 +26,8 @@ public class SparkHelloWorld {
     static List<Tuple2<String, Double>> minimums = new ArrayList<>();
     
     // The box plot information for each of the indicators
-    static double[] co2Qs = new double[3];
-    static double[][] econQs = new double[indicators.length][3];
+    static double[] co2Qs = new double[5];
+    static double[][] econQs = new double[indicators.length][5];
     
     public static void main(String[] args) throws IOException {
     	SparkConf sparkConf = new SparkConf().setAppName("Spark Hello World").setMaster("local");
@@ -82,9 +82,11 @@ public class SparkHelloWorld {
         // Report all of the relevant information
         System.out.println("CO2 emissions metric tons per capita");
         System.out.println("Min:   " + String.format("%25.6f", minimums.get(0)._2));
+        System.out.println("Low:   " + String.format("%25.6f", co2Qs[3]));
         System.out.println("Q1:    " + String.format("%25.6f", co2Qs[0]));
         System.out.println("Med:   " + String.format("%25.6f", co2Qs[1]));
         System.out.println("Q3:    " + String.format("%25.6f", co2Qs[2]));
+        System.out.println("High:  " + String.format("%25.6f", co2Qs[4]));
         System.out.println("Max:   " + String.format("%25.6f", maximums.get(0)._2));
         System.out.println("Count: " + String.format("%25.6f", co2Info[0]));
         System.out.println("Sum:   " + String.format("%25.6f", co2Info[1]));
@@ -93,10 +95,12 @@ public class SparkHelloWorld {
         for (int i = 0; i < data.size(); i++) {
         	List<Tuple2<String, Tuple2<Double, Double>>> collection = data.get(i);
         	System.out.println("\n" + indicatorNames[i]);
-            System.out.println("Min:   " + String.format("%25.6f", minimums.get(i+1)._2));
+            System.out.println("Low:   " + String.format("%25.6f", minimums.get(i+1)._2));
+            System.out.println("Q3:    " + String.format("%25.6f", econQs[i][3]));
             System.out.println("Q1:    " + String.format("%25.6f", econQs[i][0]));
             System.out.println("Med:   " + String.format("%25.6f", econQs[i][1]));
             System.out.println("Q3:    " + String.format("%25.6f", econQs[i][2]));
+            System.out.println("High:  " + String.format("%25.6f", econQs[i][4]));
             System.out.println("Max:   " + String.format("%25.6f", maximums.get(i+1)._2));
             System.out.println("Count: " + String.format("%25.6f", meanInfo[i][0]));
             System.out.println("Sum:   " + String.format("%25.6f", meanInfo[i][1]));
@@ -281,14 +285,21 @@ public class SparkHelloWorld {
     		co2Qs[0] = q1;
     		co2Qs[1] = median;
     		co2Qs[2] = q3;
+    		co2Qs[3] = lowTolerance;
+    		co2Qs[4] = highTolerance;
     	} else {
     		econQs[indicatorIndex][0] = q1;
     		econQs[indicatorIndex][1] = median;
     		econQs[indicatorIndex][2] = q3;
+    		econQs[indicatorIndex][3] = lowTolerance;
+    		econQs[indicatorIndex][4] = highTolerance;
     	}
     	
     	JavaPairRDD<String, Double> filtered = rdd.filter((Function<Tuple2<String, Double>, Boolean>) pair -> {
-    		if (pair._2 < lowTolerance || pair._2 > highTolerance) return false;
+    		if (pair._2 < lowTolerance || pair._2 > highTolerance) {
+    			return false;
+    		}
+    		
     		return true;
     	});
     	
