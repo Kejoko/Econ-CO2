@@ -39,8 +39,9 @@ public class SparkHelloWorld {
         JavaPairRDD<String, Double> sortedCO2 = sortByValue(pairCO2);
         
         // Transform the CO2 data and calculate the relevant information
-        JavaPairRDD<String, Double> featureScaledCO2 = featureScale(sortedCO2);
-        JavaPairRDD<String, Double> normalizedCO2 = removeOutliers(normallyDistribute(sortedCO2));
+        JavaPairRDD<String, Double> normalizedCO2 = featureScale(sortedCO2);
+//        JavaPairRDD<String, Double> featureScaledCO2 = featureScale(sortedCO2);
+//        JavaPairRDD<String, Double> normalizedCO2 = removeOutliers(normallyDistribute(sortedCO2));
         double[] co2Info = calculateMean(normalizedCO2);
 
         //Filter by all relevant codes
@@ -61,8 +62,9 @@ public class SparkHelloWorld {
             JavaPairRDD<String, Double> sorted = sortByValue(paired);
 
             //Normalize the data
-            JavaPairRDD<String, Double> featureScaled = featureScale(sorted);
-            JavaPairRDD<String, Double> normalized = removeOutliers(normallyDistribute(sorted));
+            JavaPairRDD<String, Double> normalized = featureScale(sorted);
+//            JavaPairRDD<String, Double> featureScaled = featureScale(sorted);
+//            JavaPairRDD<String, Double> normalized = removeOutliers(normallyDistribute(sorted));
             meanInfo[i] = calculateMean(normalized);
 
             //JOIN the RDD to the CO2 RDD
