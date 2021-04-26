@@ -46,6 +46,17 @@ public class SparkHelloWorld {
         JavaPairRDD<String, Double> normalizedCO2 = removeOutliers(-1, normallyDistribute(sortedCO2));
         JavaPairRDD<String, Double> featureScaledCO2 = featureScale(normalizedCO2);
         double[] co2Info = calculateMean(normalizedCO2);
+        
+        // Report all of the relevant information
+        System.out.println("CO2 emissions metric tons per capita");
+        System.out.println("Min:   " + String.format("%25.6f", minimums.get(0)._2));
+        System.out.println("Q1:    " + String.format("%25.6f", co2Qs[0]));
+        System.out.println("Med:   " + String.format("%25.6f", co2Qs[1]));
+        System.out.println("Q3:    " + String.format("%25.6f", co2Qs[2]));
+        System.out.println("Max:   " + String.format("%25.6f", maximums.get(0)._2));
+        System.out.println("Count: " + String.format("%25.6f", co2Info[0]));
+        System.out.println("Sum:   " + String.format("%25.6f", co2Info[1]));
+        System.out.println("Mean:  " + String.format("%25.6f", co2Info[2]));
 
         //Filter by all relevant codes
         JavaRDD<String> initialFilter = filterByCodes(stringJavaRDD, indicators);
@@ -77,19 +88,7 @@ public class SparkHelloWorld {
 
             //calculate coefficient
             corrCoeffs[i] = calculateCorrelationCoefficient(joined, co2Info[2], meanInfo[i][2]);
-        }
-        
-        System.out.println("CO2 emissions metric tons per capita");
-        System.out.println("Min:   " + String.format("%25.6f", minimums.get(0)._2));
-        System.out.println("Q1:    " + String.format("%25.6f", co2Qs[0]));
-        System.out.println("Med:   " + String.format("%25.6f", co2Qs[1]));
-        System.out.println("Q3:    " + String.format("%25.6f", co2Qs[2]));
-        System.out.println("Max:   " + String.format("%25.6f", maximums.get(0)._2));
-        System.out.println("Count: " + String.format("%25.6f", co2Info[0]));
-        System.out.println("Sum:   " + String.format("%25.6f", co2Info[1]));
-        System.out.println("Mean:  " + String.format("%25.6f", co2Info[2]));
-        
-        for (int i = 0; i < data.size(); i++) {
+            
         	List<Tuple2<String, Tuple2<Double, Double>>> collection = data.get(i);
         	System.out.println("\n" + indicatorNames[i]);
             System.out.println("Min:   " + String.format("%25.6f", minimums.get(i+1)._2));
@@ -107,6 +106,10 @@ public class SparkHelloWorld {
                 System.out.println(tuple._1 + " ( " + tupleString + " )");
         	}
         }
+        
+//        for (int i = 0; i < data.size(); i++) {
+//
+//        }
     }
 
     //Method which calls MapToPair and returns an RDD with a key of Country Code and a Value
