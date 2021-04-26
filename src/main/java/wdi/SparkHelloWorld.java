@@ -252,7 +252,7 @@ public class SparkHelloWorld {
         	
     		median = (firstMedian + secondMedian) / 2;
     	} else {
-    		int medianOffset = Math.floorDiv(endIndex, 2);
+    		int medianOffset = Math.floorDiv(size, 2);
         	System.out.println("offset: " + medianOffset);
         	System.out.println("index: " + (startIndex + medianOffset));
     		median = list.get(startIndex + medianOffset)._2;
@@ -262,8 +262,8 @@ public class SparkHelloWorld {
     }
     
     private static JavaPairRDD<String, Double> removeOutliers(int indicatorIndex, JavaPairRDD<String, Double> rdd) {
-    	System.out.println("\n\n\n\n\nCALCULATING MEDIAN, Q1, Q3");
     	List<Tuple2<String, Double>> list = rdd.collect();
+    	System.out.println("\n\n\n\n\nCALCULATING MEDIAN, Q1, Q3");
     	int size = list.size();
     	System.out.println("Size: " + size);
     	
