@@ -17,9 +17,17 @@ import java.util.Comparator;
 import java.util.List;
 
 public class SparkHelloWorld {
+    static String[] indicators = { "TX.VAL.MRCH.CD.WT", "TM.VAL.MRCH.CD.WT", "TG.VAL.TOTL.GD.ZS", "NY.GDP.PCAP.CD", "NY.GNP.MKTP.CD"};
+    static String[] indicatorNames = { "Merchandise Exports $US", "Merchandise Imports $US", "Merchandise Trade % of GDP", "GDP per capita $US", "GNI $US"};
+    static String CO2IndicatorCode = "EN.ATM.CO2E.PC";
+	
     //First value will be CO2, then the rest of the indicators in order
     static List<Tuple2<String, Double>> maximums = new ArrayList<>();
     static List<Tuple2<String, Double>> minimums = new ArrayList<>();
+    
+    // The box plot information for each of the indicators
+    static double[] co2Qs = new double[3];
+    static double[][] econQs = new double[indicators.length][3];
     
     public static void main(String[] args) throws IOException {
     	SparkConf sparkConf = new SparkConf().setAppName("Spark Hello World").setMaster("local");
@@ -29,19 +37,14 @@ public class SparkHelloWorld {
         //TEST RUN FOR MERCHANDISE EXPORTS (TX.VAL.MRCH.CD.WT)
         //CO2 EN.ATM.CO2E.PC
 
-        String[] indicators = { "TX.VAL.MRCH.CD.WT", "TM.VAL.MRCH.CD.WT", "TG.VAL.TOTL.GD.ZS", "NY.GDP.PCAP.CD", "NY.GNP.MKTP.CD"};
-        String[] indicatorNames = { "Merchandise Exports $US", "Merchandise Imports $US", "Merchandise Trade % of GDP", "GDP per capita $US", "GNI $US"};
-        String CO2IndicatorCode = "EN.ATM.CO2E.PC";
-
         // Get the CO2 data and sort it
         JavaRDD<String> filterByCO2 = filterByIndicatorCode(stringJavaRDD, CO2IndicatorCode);
         JavaPairRDD<String, Double> pairCO2 = pair(filterByCO2);
         JavaPairRDD<String, Double> sortedCO2 = sortByValue(pairCO2);
         
         // Transform the CO2 data and calculate the relevant information
-        JavaPairRDD<String, Double> normalizedCO2 = featureScale(sortedCO2);
-//        JavaPairRDD<String, Double> featureScaledCO2 = featureScale(sortedCO2);
-//        JavaPairRDD<String, Double> normalizedCO2 = removeOutliers(normallyDistribute(sortedCO2));
+        JavaPairRDD<String, Double> normalizedCO2 = removeOutliers(-1, normallyDistribute(sortedCO2));
+        JavaPairRDD<String, Double> featureScaledCO2 = featureScale(normalizedCO2);
         double[] co2Info = calculateMean(normalizedCO2);
 
         //Filter by all relevant codes
@@ -62,9 +65,8 @@ public class SparkHelloWorld {
             JavaPairRDD<String, Double> sorted = sortByValue(paired);
 
             //Normalize the data
-            JavaPairRDD<String, Double> normalized = featureScale(sorted);
-//            JavaPairRDD<String, Double> featureScaled = featureScale(sorted);
-//            JavaPairRDD<String, Double> normalized = removeOutliers(normallyDistribute(sorted));
+            JavaPairRDD<String, Double> normalized = removeOutliers(i, normallyDistribute(sorted));
+            JavaPairRDD<String, Double> featureScaled = featureScale(normalized);
             meanInfo[i] = calculateMean(normalized);
 
             //JOIN the RDD to the CO2 RDD
@@ -79,6 +81,9 @@ public class SparkHelloWorld {
         
         System.out.println("CO2 emissions metric tons per capita");
         System.out.println("Min:   " + minimums.get(0)._2);
+        System.out.println("Q1:    " + co2Qs[0]);
+        System.out.println("Q2:    " + co2Qs[1]);
+        System.out.println("Q3:    " + co2Qs[2]);
         System.out.println("Max:   " + maximums.get(0)._2);
     	System.out.println("Count: " + co2Info[0]);
     	System.out.println("Sum:   " + co2Info[1]);
@@ -88,6 +93,9 @@ public class SparkHelloWorld {
         	List<Tuple2<String, Tuple2<Double, Double>>> collection = data.get(i);
         	System.out.println("\n" + indicatorNames[i]);
             System.out.println("Min:   " + minimums.get(i + 1)._2);
+            System.out.println("Q1:    " + econQs[i][0]);
+            System.out.println("Q2:    " + econQs[i][1]);
+            System.out.println("Q3:    " + econQs[i][2]);
             System.out.println("Max:   " + maximums.get(i + 1)._2);
         	System.out.println("Count: " + meanInfo[i][0]);
         	System.out.println("Sum:   " + meanInfo[i][1]);
@@ -225,20 +233,53 @@ public class SparkHelloWorld {
     	return rdd;
     }
     
-    private static JavaPairRDD<String, Double> removeOutliers(JavaPairRDD<String, Double> rdd) {
-    	// Use Interquartile Range (IQR) to identify and remove outliers
+    private static double calculateMedian(List<Tuple2<String, Double>> list, int startIndex, int endIndex) {
+    	int size = endIndex - startIndex;
     	
-    	// Find 25th percentile (Q1)
+    	if (size % 2 == 0) {
+    		int firstMedianOffset = (size / 2) - 1;
+    		int secondMedianOffset = size / 2;
+    		double firstMedian = list.get(startIndex + firstMedianOffset)._2;
+    		double secondMedian = list.get(startIndex + secondMedianOffset)._2;
+    		return (firstMedian + secondMedian) / 2;
+    	} else {
+    		int medianOffset = Math.floorDiv(endIndex, size);
+    		return list.get(startIndex + medianOffset)._2;
+    	}
+    }
+    
+    private static JavaPairRDD<String, Double> removeOutliers(int indicatorIndex, JavaPairRDD<String, Double> rdd) {
     	
-    	// Find 75th percentile (Q3)
+    	List<Tuple2<String, Double>> list = rdd.collect();
+    	int size = list.size();
     	
-    	// Find the midspread (difference between 75th and 25th percentiles)
-    	// IQR = Q3 - Q1
+    	// Calculate Q2
+    	double q2 = calculateMedian(list, 0, size);
     	
-    	// Outlier if:
-    	// value < Q1 - 1.5 * IQR
-    	// or
-    	// value > Q3 + 1.5 * IQR
+    	// Calculate Q1 and Q3
+    	int sublistSize;
+    	if (size % 2 == 0) {
+    		sublistSize = (size / 2) - 1;
+    	} else {
+    		sublistSize = (size - 1) / 2;
+    	}
+    	double q1 = calculateMedian(list, 0, sublistSize);
+    	double q3 = calculateMedian(list, size - sublistSize, size);
+    	
+    	// Calculate IQR and tolerances
+    	double iqr = q3 - q1;
+    	double lowTolerance = q1 - (1.5 * iqr);
+    	double highTolerance = q3 + (1.5 * iqr);
+    	
+    	if (indicatorIndex == -1) {
+    		co2Qs[0] = q1;
+    		co2Qs[1] = q2;
+    		co2Qs[2] = q3;
+    	} else {
+    		econQs[indicatorIndex][0] = q1;
+    		econQs[indicatorIndex][1] = q2;
+    		econQs[indicatorIndex][2] = q3;
+    	}
     	
     	return rdd;
     }
