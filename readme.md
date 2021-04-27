@@ -14,6 +14,7 @@ This is a term project for CS 455 Distributed Systems. This project examines wor
 1. Move the unzipped archive to your home directory and rename it `WDIDataset`
 1. Run: `source init.sh`
     * This downloads and sets up spark
+1. Run `gradle build`
     
 #### Run the spark job on the cluster
 **Make sure you're logged into `des-moines`**
