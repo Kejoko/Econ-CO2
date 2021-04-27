@@ -73,7 +73,7 @@ ENV_FILE=${SPARK_CONF_DIR}/spark-env.sh
     echo "export SPARK_MASTER_WEBUI_PORT=50001" >> ${ENV_FILE}
     echo "export SPARK_WORKER_CORES=2" >> ${ENV_FILE}
     echo "export SPARK_WORKER_MEMORY=2g" >> ${ENV_FILE}
-    echo "export SPARK_WORKER_INSTANCES=2" >> ${ENV_FILE}
+    echo "export SPARK_WORKER_INSTANCES=1" >> ${ENV_FILE}
     echo "${BOLD}${GREEN}SUCCESS:${NORMAL}${NOCOLOR} Updated spark-env.sh file"
 } || {
     echo "  - ${RED}Failed to update spark-env.sh file.${NORMAL}${NOCOLOR}"
