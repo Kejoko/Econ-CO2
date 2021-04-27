@@ -26,4 +26,4 @@ This is a term project for CS 455 Distributed Systems. This project examines wor
 
 #### Run a Spark Job locally
 1. Cd into this directory
-1. `./runjar.sh local`
+1. `./runjar.sh`
