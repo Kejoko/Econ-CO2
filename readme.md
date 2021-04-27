@@ -29,3 +29,18 @@ This is a term project for CS 455 Distributed Systems. This project examines wor
 #### Run a Spark Job locally
 1. Cd into this directory
 1. `./runjar.sh`
+
+## Explanation
+* All of the processing is done in `src/main/java/wdi/CorelationCalculator.java`
+* First an rdd is created from the dataset
+* A pair rdd is created by filtering the lines containing the CO2 emissions indicator
+    * The pairs are in the format (<country code><year>, <value>)
+    * The outliers are removed using IQR score
+    * The max, min, and mean of the set are calculated
+* For each of the following economic indicator variables the following operations are performed
+    * Create pair rdd by filtering the file rdd for the lines containing the desired indicator
+        * The pairs are in the format (<country code><year>, <value>)
+        * The outliers are removed using IQR score
+        * The max, min, and mean of the set are calculated
+    * Create a pair rdd by mapping each <country code><year> key to a tuple containing the emissions value and economic value
+    * The correlation coefficient is calculated using Pearson's Correlation Coefficient method
