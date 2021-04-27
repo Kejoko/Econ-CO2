@@ -24,6 +24,7 @@ This is a term project for CS 455 Distributed Systems. This project examines wor
     * This script starts your spark cluster and exports an environment variable `SPARK_SUBMIT` making it easy to submit spark jobs
 1. Navigate to `localhost:50001` in a web browser to see the running jobs
 1. Run `./runjar.sh cluster` to submit a job to the cluster
+1. Run `./shutdown.sh` to shutdown the cluster once the job has finished and you have viewed the results
 
 #### Run a Spark Job locally
 1. Cd into this directory
