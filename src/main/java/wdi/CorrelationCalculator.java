@@ -48,9 +48,12 @@ public class CorrelationCalculator {
     	boolean normalize = false;
     	if (args.length > 2 && args[2].equals("true")) normalize = true;
     	
-    	SparkConf sparkConf = new SparkConf().setAppName("Economic indicators correlation to CO2 emssions");
-    	if (cluster) sparkConf.setMaster("spark://des-moines:50000");
-    	else sparkConf.setMaster("local");
+    	SparkConf sparkConf;
+    	if (cluster) {
+    		sparkConf = new SparkConf().setAppName("Economic indicators correlation to CO2 emssions").setMaster("spark://des-moines:50000"); 
+    	} else {
+    		sparkConf = new SparkConf().setAppName("Economic indicators correlation to CO2 emssions").setMaster("local");
+    	}
         JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
         JavaRDD<String> stringJavaRDD = sparkContext.textFile("file://" + homeDir + "/WDIDataset/Indicators.csv");
 
