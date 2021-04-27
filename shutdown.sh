@@ -9,20 +9,15 @@ GREEN=$(tput setaf 2)
 CYAN=$(tput setaf 6)
 NOCOLOR=$(tput setf 9)
 
-# stop yarn
-{
-    echo "${BOLD}${YELLOW}STOPPING YARN${NORMAL}${NOCOLOR}"
-    $HADOOP_HOME/sbin/stop-yarn.sh
-    echo "${BOLD}${GREEN}STOPPED YARN${NORMAL}${NOCOLOR}"
-} || {
-    echo "  - ${RED}Failed to stop yarn.${NORMAL}${NOCOLOR}"
-}
+# stop spark cluster
 
-# stop hdfs
+# Start spark cluster
 {
-    echo "${BOLD}${YELLOW}STOPPING HDFS${NORMAL}${NOCOLOR}"
-    $HADOOP_HOME/sbin/stop-dfs.sh
-    echo "${BOLD}${GREEN}STOPPED HDFS${NORMAL}${NOCOLOR}"
+    echo ""
+    echo ""
+    echo "${CYAN}Attempting:${NORMAL}${NOCOLOR} Stopping spark cluster"
+    $SPARK_HOME/sbin/stop-all.sh
+    echo "${BOLD}${GREEN}SUCCESS:${NORMAL}${NOCOLOR} Stopped spark cluster"
 } || {
-    echo "  - ${RED}Failed to stop hdfs.${NORMAL}${NOCOLOR}"
+    echo "  - ${RED}Failed to stop spark cluster.${NORMAL}${NOCOLOR}"
 }

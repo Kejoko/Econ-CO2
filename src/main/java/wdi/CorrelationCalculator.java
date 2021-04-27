@@ -39,11 +39,21 @@ public class CorrelationCalculator {
     }
     
     public static void main(String[] args) throws IOException {
+    	// Get the home directory for this user, master option, and whether or not to normalize data
     	String homeDir = args[0];
-    	boolean normalize = false;
-    	if (args.length > 1 && args[1].equals("true")) normalize = true;
     	
-    	SparkConf sparkConf = new SparkConf().setAppName("Economic indicators correlation to CO2 emssions").setMaster("local");
+    	String mode = args[1];
+    	boolean cluster = mode.equals("cluster");
+    	
+    	boolean normalize = false;
+    	if (args.length > 2 && args[2].equals("true")) normalize = true;
+    	
+    	SparkConf sparkConf;
+    	if (cluster) {
+    		sparkConf = new SparkConf().setAppName("Economic indicators correlation to CO2 emssions").setMaster("spark://des-moines:50000"); 
+    	} else {
+    		sparkConf = new SparkConf().setAppName("Economic indicators correlation to CO2 emssions").setMaster("local");
+    	}
         JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
         JavaRDD<String> stringJavaRDD = sparkContext.textFile("file://" + homeDir + "/WDIDataset/Indicators.csv");
 

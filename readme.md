@@ -10,23 +10,21 @@ This is a term project for CS 455 Distributed Systems. This project examines wor
 ## Project Setup
 #### First time
 1. Download the data from [kaggle](https://www.kaggle.com/worldbank/world-development-indicators/download)
-2. Unzip the archive
-    * By default the resulting directory is named archive
-3. Add the unarchived directory to your school machine (if you're not already on your school machine)
-    * This may take a while as there is nearly 2gb of data to transfer
-4. Start your hadoop cluster
-5. Run: `$HADOOP_HOME/bin/hadoop fs -put -f <unarchived_dir> /wdi_data`
-    * This puts the unarchived data directory into the hadoop cluster at location `/wdi_data`
-6. Run: `$HADOOP_HOME/bin/hadoop fs -ls /wdi_data`
-    * It should list all of the files in the dataset. This ensures you properly put the dataset in your cluster
-7. Run: `source init.sh`
+1. Unzip the archive
+1. Move the unzipped archive to your home directory and rename it `WDIDataset`
+1. Run: `source init.sh`
     * This downloads and sets up spark
+1. Run `gradle build`
     
-#### Regular setup
+#### Run the spark job on the cluster
+**Make sure you're logged into `des-moines`**
+    * This is the master for the cluster created with the `init.sh ` script
 1. Cd into this directory
-2. Run the startup script via `source startup.sh`
+1. Run the startup script via `source startup.sh`
     * This script starts your spark cluster and exports an environment variable `SPARK_SUBMIT` making it easy to submit spark jobs
+1. Navigate to `localhost:50001` in a web browser to see the running jobs
+1. Run `./runjar.sh cluster` to submit a job to the cluster
 
 #### Run a Spark Job locally
-1. cd into `/usr/local/spark/3.0.1-with-hadoop3.2/bin`
-2. Run the command `spark-submit --class [class name] --master local [jar file path]`
+1. Cd into this directory
+1. `./runjar.sh`

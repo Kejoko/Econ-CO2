@@ -4,6 +4,8 @@
 # Ignore spark binaries and stuff
 spark-3.1.1-bin-without-hadoop/
 spark-3.1.1-bin-without-hadoop.tgz
+spark-3.1.1-bin-hadoop3.2.tgz
+spark-3.1.1-bin-hadoop3.2/
 
 # Ignore data
 wdi_data/
