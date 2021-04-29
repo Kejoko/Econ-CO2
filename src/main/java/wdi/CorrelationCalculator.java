@@ -386,6 +386,8 @@ public class CorrelationCalculator {
     	
     	for (Tuple2<String, Double> tuple : list) {
     		String countryCode = tuple._1.substring(0, tuple._1.length() - 4);
+    		String year = tuple._1.substring(tuple._1.length() - 4, tuple._1.length());
+    		if (Integer.parseInt(year) < 2015) continue;
     		if (codes.contains(countryCode)) {
     			int index = codes.indexOf(countryCode);
     			values.set(index, values.get(index) + tuple._2);
