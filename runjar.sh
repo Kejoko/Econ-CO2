@@ -16,12 +16,8 @@ if [ "$#" -lt 1 ]
 then
     echo "No command line argument given. Submitting job locally."
     MODE=$LOCAL_STR
-elif [ "$#" -eq 1 ]
-then
-    MODE=$1
 else
-    echo "Too many arguments given. Please pass only either $LOCAL_STR or $CLUSTER_STR."
-    exit 1
+    MODE=$1
 fi
 
 if [ "$MODE" = "$LOCAL_STR" ] || [ "$MODE" = "$CLUSTER_STR" ]
@@ -37,13 +33,13 @@ fi
 # Local
 if [ "$MODE" = "$LOCAL_STR" ]
 then
-    echo "Running command: ${GREEN}/usr/local/spark/3.0.1-with-hadoop3.2/bin/spark-submit --master local --class wdi.CorrelationCalculator build/libs/Econ-CO2.jar ~ local${NORMAL}"
+    echo "Running command: ${GREEN}/usr/local/spark/3.0.1-with-hadoop3.2/bin/spark-submit --master local --class wdi.CorrelationCalculator build/libs/Econ-CO2.jar ~ local ${NORMAL}"
     /usr/local/spark/3.0.1-with-hadoop3.2/bin/spark-submit --master local --class wdi.CorrelationCalculator build/libs/Econ-CO2.jar ~ local
 fi
 
 # Cluster
 if [ "$MODE" = "$CLUSTER_STR" ]
 then
-    echo "Running command: ${GREEN}$SPARK_SUBMIT --master spark://des-moines:50000 --deploy-mode cluster --class wdi.CorrelationCalculator build/libs/Econ-CO2.jar ~ cluster${NORMAL}"
+    echo "Running command: ${GREEN}$SPARK_SUBMIT --master spark://des-moines:50000 --deploy-mode cluster --class wdi.CorrelationCalculator build/libs/Econ-CO2.jar ~ cluster ${NORMAL}"
     $SPARK_SUBMIT --master spark://des-moines:50000 --deploy-mode cluster --class wdi.CorrelationCalculator build/libs/Econ-CO2.jar ~ cluster
 fi
