@@ -46,11 +46,8 @@ public class CorrelationCalculator {
     	String mode = args[1];
     	boolean cluster = mode.equals("cluster");
     	
-    	boolean getTop10 = false;
-    	if (args.length > 2 && args[2].equals("true")) getTop10 = true;
-    	
     	boolean normalize = false;
-    	if (args.length > 3 && args[3].equals("true")) normalize = true;
+    	if (args.length > 2 && args[2].equals("true")) normalize = true;
     	
     	SparkConf sparkConf;
     	if (cluster) {
@@ -144,11 +141,9 @@ public class CorrelationCalculator {
         System.out.println("Count: " + String.format("%25.6f", co2Info[0]));
         System.out.println("Sum:   " + String.format("%25.6f", co2Info[1]));
         System.out.println("Mean:  " + String.format("%25.6f", co2Info[2]));
-        if (getTop10) {
-	    	for (Tuple2<String, Double> tuple : co2Top10Countries) {
-	    		System.out.println(String.format("%5s %20.5f", tuple._1, tuple._2));
-	    	}
-        }
+    	for (Tuple2<String, Double> tuple : co2Top10Countries) {
+    		System.out.println(String.format("%5s %20.5f", tuple._1, tuple._2));
+    	}
         
         for (int i = 0; i < data.size(); i++) {
         	List<Tuple2<String, Tuple2<Double, Double>>> collection = data.get(i);
@@ -164,15 +159,8 @@ public class CorrelationCalculator {
             System.out.println("Sum:   " + String.format("%25.6f", econInfo[i][1]));
             System.out.println("Mean:  " + String.format("%25.6f", econInfo[i][2]));
         	System.out.println("Correlation Coefficient: " + corrCoeffs[i]);
-//        	for (int j = 0; j < 10; j++) {
-//                Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(j);
-//                String tupleString = String.format("%20.5f , %8.5f", tuple._2._1, tuple._2._2);
-//                System.out.println(tuple._1 + " ( " + tupleString + " )");
-//        	}
-        	if (getTop10) {
-	        	for (Tuple2<String, Double> tuple : econTop10Countries.get(i)) {
-	        		System.out.println(String.format("%5s %20.5f", tuple._1, tuple._2));
-	        	}
+        	for (Tuple2<String, Double> tuple : econTop10Countries.get(i)) {
+        		System.out.println(String.format("%5s %20.5f", tuple._1, tuple._2));
         	}
         }
     }
@@ -397,7 +385,7 @@ public class CorrelationCalculator {
     	for (Tuple2<String, Double> tuple : list) {
     		String countryCode = tuple._1.substring(0, tuple._1.length() - 4);
     		String year = tuple._1.substring(tuple._1.length() - 4, tuple._1.length());
-    		if (Integer.parseInt(year) < 2005) continue;
+//    		if (Integer.parseInt(year) < 2005) continue;
     		if (codes.contains(countryCode)) {
     			int index = codes.indexOf(countryCode);
     			values.set(index, values.get(index) + tuple._2);
