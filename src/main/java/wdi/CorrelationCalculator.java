@@ -71,7 +71,7 @@ public class CorrelationCalculator {
         	JavaPairRDD<String, Tuple2<Double, Double>> paired = co2.join(gdp);
         	
 //        	BufferedWriter csvWriter = new BufferedWriter(new FileWriter("~/GDPvCO2.csv"));
-        	String csvFileName = "~/GDPvCO2.csv";
+        	String csvFileName = "GDPvCO2.csv";
         	File csvFile = new File(csvFileName);
         	csvFile.createNewFile();
         	FileOutputStream csvOstream = new FileOutputStream(csvFile, false);
@@ -81,6 +81,8 @@ public class CorrelationCalculator {
         		byte[] bytesToWrite = new String(bigTuple._1 + "," + bigTuple._2._1 + "," + bigTuple._2._2 + "\n").getBytes();
         		csvOstream.write(bytesToWrite);
         	}
+        	
+        	csvOstream.close();
         	System.out.println("Successfully outputted GDP and CO2 indicator values to " + csvFileName);
         	return;
         }
