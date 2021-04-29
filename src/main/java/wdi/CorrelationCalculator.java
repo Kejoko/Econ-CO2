@@ -13,6 +13,7 @@ import scala.Tuple2;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -45,8 +46,11 @@ public class CorrelationCalculator {
     	String mode = args[1];
     	boolean cluster = mode.equals("cluster");
     	
+    	boolean getTop10 = false;
+    	if (args.length > 2 && args[2].equals("true")) getTop10 = true;
+    	
     	boolean normalize = false;
-    	if (args.length > 2 && args[2].equals("true")) normalize = true;
+    	if (args.length > 3 && args[3].equals("true")) normalize = true;
     	
     	SparkConf sparkConf;
     	if (cluster) {
@@ -80,7 +84,8 @@ public class CorrelationCalculator {
         }
         
         // Get the top 10 country codes from the trimmed CO2 RDD
-        ArrayList<Tuple2<String, Double>> co2Top10Countries = getTop10CountryCodes(trimmedCO2);
+        ArrayList<Tuple2<String, Double>> co2Top10Countries = null;
+        if (getTop10) co2Top10Countries = getTop10CountryCodes(trimmedCO2);
 
         // Filter by all relevant codes
         JavaRDD<String> initialFilter = filterByCodes(stringJavaRDD, indicators);
@@ -114,7 +119,7 @@ public class CorrelationCalculator {
             }
             
             // Get the top 10 country codes for this RDD
-            econTop10Countries.add(getTop10CountryCodes(trimmed));
+            if (getTop10) econTop10Countries.add(getTop10CountryCodes(trimmed));
 
             // JOIN the RDD to the CO2 RDD
 //            JavaPairRDD<String, Tuple2<Double, Double>> joined = normalized.join(normalizedCO2);
@@ -139,9 +144,11 @@ public class CorrelationCalculator {
         System.out.println("Count: " + String.format("%25.6f", co2Info[0]));
         System.out.println("Sum:   " + String.format("%25.6f", co2Info[1]));
         System.out.println("Mean:  " + String.format("%25.6f", co2Info[2]));
-    	for (Tuple2<String, Double> tuple : co2Top10Countries) {
-    		System.out.println(String.format("%5s %20.5f", tuple._1, tuple._2));
-    	}
+        if (getTop10) {
+	    	for (Tuple2<String, Double> tuple : co2Top10Countries) {
+	    		System.out.println(String.format("%5s %20.5f", tuple._1, tuple._2));
+	    	}
+        }
         
         for (int i = 0; i < data.size(); i++) {
         	List<Tuple2<String, Tuple2<Double, Double>>> collection = data.get(i);
@@ -162,8 +169,10 @@ public class CorrelationCalculator {
 //                String tupleString = String.format("%20.5f , %8.5f", tuple._2._1, tuple._2._2);
 //                System.out.println(tuple._1 + " ( " + tupleString + " )");
 //        	}
-        	for (Tuple2<String, Double> tuple : econTop10Countries.get(i)) {
-        		System.out.println(String.format("%5s %20.5f", tuple._1, tuple._2));
+        	if (getTop10) {
+	        	for (Tuple2<String, Double> tuple : econTop10Countries.get(i)) {
+	        		System.out.println(String.format("%5s %20.5f", tuple._1, tuple._2));
+	        	}
         	}
         }
     }
@@ -381,6 +390,7 @@ public class CorrelationCalculator {
     	
     	ArrayList<String> codes = new ArrayList<String>();
     	ArrayList<Double> values = new ArrayList<Double>();
+    	ArrayList<Integer> counts = new ArrayList<Integer>();
     	
     	List<Tuple2<String, Double>> list = rdd.collect();
     	
@@ -391,14 +401,23 @@ public class CorrelationCalculator {
     		if (codes.contains(countryCode)) {
     			int index = codes.indexOf(countryCode);
     			values.set(index, values.get(index) + tuple._2);
+    			counts.set(index, counts.get(index) + 1);
     		} else {
     			codes.add(countryCode);
     			values.add(tuple._2);
+    			counts.add(1);
     		}
     	}
     	
-    	for (int i = codes.size() - 1; i >= codes.size() - 10; i--) {
-    		top10.add(new Tuple2<String, Double>(codes.get(i), values.get(i)));
+    	ArrayList<Tuple2<String, Double>> avgPairs = new ArrayList<Tuple2<String, Double>>();
+    	for (int i = 0; i < codes.size(); i++) {
+    		avgPairs.add(new Tuple2(codes.get(i), values.get(i) / counts.get(i)));
+    	}
+    	
+    	Collections.sort(avgPairs, new compareTuple());
+    	
+    	for (int i = 0; i < 10; ++i) {
+    		top10.add(avgPairs.get(i));
     	}
     	
     	return top10;
