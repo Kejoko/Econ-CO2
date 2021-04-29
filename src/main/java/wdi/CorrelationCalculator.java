@@ -65,7 +65,7 @@ public class CorrelationCalculator {
         JavaPairRDD<String, Double> pairCO2 = pair(filterByCO2);
         JavaPairRDD<String, Double> sortedCO2 = sortByValue(pairCO2);
         
-        // Transform the CO2 data and calculate the relevant information
+        // Remove the outliers from the sorted dataset
         JavaPairRDD<String, Double> trimmedCO2;
         double[] co2Info;
         if (!normalize) {
@@ -78,6 +78,9 @@ public class CorrelationCalculator {
 	        trimmedCO2 = removeOutliers(-1, normalizedCO2);
 	        co2Info = calculateMean(trimmedCO2);
         }
+        
+        // Get the top 10 country codes from the trimmed CO2 RDD
+        ArrayList<Tuple2<String, Double>> co2Top10Countries = getTop10CountryCodes(trimmedCO2);
 
         // Filter by all relevant codes
         JavaRDD<String> initialFilter = filterByCodes(stringJavaRDD, indicators);
@@ -87,6 +90,7 @@ public class CorrelationCalculator {
 
         double[][] econInfo = new double[indicators.length][3];
         double[] corrCoeffs = new double[indicators.length];
+        ArrayList<ArrayList<Tuple2<String, Double>>> econTop10Countries = new ArrayList<ArrayList<Tuple2<String, Double>>>();
         for (int i = 0; i < indicators.length; i++) {
 
             // Filter out everything except one code
@@ -108,6 +112,9 @@ public class CorrelationCalculator {
 	            trimmed = removeOutliers(i, normalized);
 	            econInfo[i] = calculateMean(trimmed);
             }
+            
+            // Get the top 10 country codes for this RDD
+            econTop10Countries.add(getTop10CountryCodes(trimmed));
 
             // JOIN the RDD to the CO2 RDD
 //            JavaPairRDD<String, Tuple2<Double, Double>> joined = normalized.join(normalizedCO2);
@@ -132,6 +139,9 @@ public class CorrelationCalculator {
         System.out.println("Count: " + String.format("%25.6f", co2Info[0]));
         System.out.println("Sum:   " + String.format("%25.6f", co2Info[1]));
         System.out.println("Mean:  " + String.format("%25.6f", co2Info[2]));
+    	for (Tuple2<String, Double> tuple : co2Top10Countries) {
+    		System.out.println(String.format("%5s %20.5f", tuple._1, tuple._2));
+    	}
         
         for (int i = 0; i < data.size(); i++) {
         	List<Tuple2<String, Tuple2<Double, Double>>> collection = data.get(i);
@@ -147,10 +157,13 @@ public class CorrelationCalculator {
             System.out.println("Sum:   " + String.format("%25.6f", econInfo[i][1]));
             System.out.println("Mean:  " + String.format("%25.6f", econInfo[i][2]));
         	System.out.println("Correlation Coefficient: " + corrCoeffs[i]);
-        	for (int j = 0; j < 10; j++) {
-                Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(j);
-                String tupleString = String.format("%20.5f , %8.5f", tuple._2._1, tuple._2._2);
-                System.out.println(tuple._1 + " ( " + tupleString + " )");
+//        	for (int j = 0; j < 10; j++) {
+//                Tuple2<String, Tuple2<Double, Double>> tuple = collection.get(j);
+//                String tupleString = String.format("%20.5f , %8.5f", tuple._2._1, tuple._2._2);
+//                System.out.println(tuple._1 + " ( " + tupleString + " )");
+//        	}
+        	for (Tuple2<String, Double> tuple : econTop10Countries.get(i)) {
+        		System.out.println(String.format("%5s %20.5f", tuple._1, tuple._2));
         	}
         }
     }
@@ -194,7 +207,7 @@ public class CorrelationCalculator {
         return filtered;
     }
 
-    private static JavaRDD<String> filterByIndicatorCode(JavaRDD rdd, String indicatorCode) {
+    private static JavaRDD<String> filterByIndicatorCode(JavaRDD<String> rdd, String indicatorCode) {
         JavaRDD<String> ret = rdd.filter((Function<String, Boolean>) line -> {
 
             //split the line into tokens
@@ -207,7 +220,7 @@ public class CorrelationCalculator {
         return ret;
     }
 
-    private static JavaRDD<String> filterByCodes(JavaRDD rdd, String[] codes) {
+    private static JavaRDD<String> filterByCodes(JavaRDD<String> rdd, String[] codes) {
         JavaRDD<String> ret = rdd.filter((Function<String, Boolean>) line -> {
 
             //split the line into tokens
@@ -361,6 +374,32 @@ public class CorrelationCalculator {
     	res[1] = sum;
     	res[2] = mean;
     	return res;
+    }
+    
+    private static ArrayList<Tuple2<String, Double>> getTop10CountryCodes(JavaPairRDD<String, Double> rdd) {
+    	ArrayList<Tuple2<String, Double>> top10 = new ArrayList<Tuple2<String, Double>>();
+    	
+    	ArrayList<String> codes = new ArrayList<String>();
+    	ArrayList<Double> values = new ArrayList<Double>();
+    	
+    	List<Tuple2<String, Double>> list = rdd.collect();
+    	
+    	for (Tuple2<String, Double> tuple : list) {
+    		String countryCode = tuple._1.substring(0, tuple._1.length() - 4);
+    		if (codes.contains(countryCode)) {
+    			int index = codes.indexOf(countryCode);
+    			values.set(index, values.get(index) + tuple._2);
+    		} else {
+    			codes.add(countryCode);
+    			values.add(tuple._2);
+    		}
+    	}
+    	
+    	for (int i = 0; i < 10; i++) {
+    		top10.add(new Tuple2<String, Double>(codes.get(i), values.get(i)));
+    	}
+    	
+    	return top10;
     }
     
     private static double calculateCorrelationCoefficient(JavaPairRDD<String, Tuple2<Double, Double>> rdd, double co2Mean, double econMean) {
