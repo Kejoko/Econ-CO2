@@ -416,7 +416,7 @@ public class CorrelationCalculator {
     	
     	Collections.sort(avgPairs, new compareTuple());
     	
-    	for (int i = 0; i < 10; ++i) {
+    	for (int i = avgPairs.size() - 1; i >= avgPairs.size() - 10; i--) {
     		top10.add(avgPairs.get(i));
     	}
     	
