@@ -81,8 +81,7 @@ public class CorrelationCalculator {
         }
         
         // Get the top 10 country codes from the trimmed CO2 RDD
-        ArrayList<Tuple2<String, Double>> co2Top10Countries = null;
-        if (getTop10) co2Top10Countries = getTop10CountryCodes(trimmedCO2);
+        ArrayList<Tuple2<String, Double>> co2Top10Countries = getTop10CountryCodes(trimmedCO2);
 
         // Filter by all relevant codes
         JavaRDD<String> initialFilter = filterByCodes(stringJavaRDD, indicators);
@@ -116,7 +115,7 @@ public class CorrelationCalculator {
             }
             
             // Get the top 10 country codes for this RDD
-            if (getTop10) econTop10Countries.add(getTop10CountryCodes(trimmed));
+            econTop10Countries.add(getTop10CountryCodes(trimmed));
 
             // JOIN the RDD to the CO2 RDD
 //            JavaPairRDD<String, Tuple2<Double, Double>> joined = normalized.join(normalizedCO2);
