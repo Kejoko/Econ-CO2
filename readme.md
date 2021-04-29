@@ -30,6 +30,12 @@ This is a term project for CS 455 Distributed Systems. This project examines wor
 1. Cd into this directory
 1. `./runjar.sh`
 
+#### Options
+* `./runjar.sh <mode> graph` creates a csv file containing the co2 emission value and gdp per capita value for each country code + year combo
+    * This option is included for us to create a visual graph plotting co2 against gdp per capita
+* `./runjar.sh <mode> true` normalizes the data using min max normalization after culling the outliers
+    * This option is included to see if there was a difference between normalized data and not normalized data. There was no difference
+
 ## Explanation
 * All of the processing is done in `src/main/java/wdi/CorelationCalculator.java`
 * First an rdd is created from the dataset
