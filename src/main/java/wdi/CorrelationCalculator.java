@@ -395,7 +395,7 @@ public class CorrelationCalculator {
     		}
     	}
     	
-    	for (int i = 0; i < 10; i++) {
+    	for (int i = codes.size() - 1; i >= codes.size() - 10; i--) {
     		top10.add(new Tuple2<String, Double>(codes.get(i), values.get(i)));
     	}
     	
