@@ -12,6 +12,8 @@ import scala.Serializable;
 import scala.Tuple2;
 
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -68,11 +70,18 @@ public class CorrelationCalculator {
         	JavaPairRDD<String, Double> gdp = pair(filterByIndicatorCode(stringJavaRDD, indicators[3]));
         	JavaPairRDD<String, Tuple2<Double, Double>> paired = co2.join(gdp);
         	
-        	BufferedWriter csvWriter = new BufferedWriter(new FileWriter("~/GDPvCO2.csv"));
+//        	BufferedWriter csvWriter = new BufferedWriter(new FileWriter("~/GDPvCO2.csv"));
+        	String csvFileName = "~/GDPvCO2.csv";
+        	File csvFile = new File(csvFileName);
+        	csvFile.createNewFile();
+        	FileOutputStream csvOstream = new FileOutputStream(csvFile, false);
         	
+        	System.out.println("Outputting GDP and CO2 indicator values to " + csvFileName);
         	for (Tuple2<String, Tuple2<Double, Double>> bigTuple : paired.collect()) {
-        		csvWriter.write(bigTuple._1 + "," + bigTuple._2._1 + "," + bigTuple._2._2 + "\n");
+        		byte[] bytesToWrite = new String(bigTuple._1 + "," + bigTuple._2._1 + "," + bigTuple._2._2 + "\n").getBytes();
+        		csvOstream.write(bytesToWrite);
         	}
+        	System.out.println("Successfully outputted GDP and CO2 indicator values to " + csvFileName);
         	return;
         }
 
