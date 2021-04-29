@@ -11,6 +11,8 @@ import org.apache.spark.api.java.function.VoidFunction;
 import scala.Serializable;
 import scala.Tuple2;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,8 +68,10 @@ public class CorrelationCalculator {
         	JavaPairRDD<String, Double> gdp = pair(filterByIndicatorCode(stringJavaRDD, indicators[3]));
         	JavaPairRDD<String, Tuple2<Double, Double>> paired = co2.join(gdp);
         	
+        	BufferedWriter csvWriter = new BufferedWriter(new FileWriter("~/GDPvCO2.csv"));
+        	
         	for (Tuple2<String, Tuple2<Double, Double>> bigTuple : paired.collect()) {
-        		System.out.println(bigTuple._1 + "," + bigTuple._2._1 + "," + bigTuple._2._2);
+        		csvWriter.write(bigTuple._1 + "," + bigTuple._2._1 + "," + bigTuple._2._2 + "\n");
         	}
         	return;
         }

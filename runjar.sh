@@ -18,6 +18,11 @@ then
     MODE=$LOCAL_STR
 else
     MODE=$1
+    if [ "$#" -gt 1 ]
+    then
+        OPTION=$2
+        echo "Running with option: ${OPTION}"
+    fi
 fi
 
 if [ "$MODE" = "$LOCAL_STR" ] || [ "$MODE" = "$CLUSTER_STR" ]
@@ -33,13 +38,13 @@ fi
 # Local
 if [ "$MODE" = "$LOCAL_STR" ]
 then
-    echo "Running command: ${GREEN}/usr/local/spark/3.0.1-with-hadoop3.2/bin/spark-submit --master local --class wdi.CorrelationCalculator build/libs/Econ-CO2.jar ~ local ${NORMAL}"
-    /usr/local/spark/3.0.1-with-hadoop3.2/bin/spark-submit --master local --class wdi.CorrelationCalculator build/libs/Econ-CO2.jar ~ local
+    echo "Running command: ${GREEN}/usr/local/spark/3.0.1-with-hadoop3.2/bin/spark-submit --master local --class wdi.CorrelationCalculator build/libs/Econ-CO2.jar ~ local ${OPTION}${NORMAL}"
+    /usr/local/spark/3.0.1-with-hadoop3.2/bin/spark-submit --master local --class wdi.CorrelationCalculator build/libs/Econ-CO2.jar ~ local ${OPTION}
 fi
 
 # Cluster
 if [ "$MODE" = "$CLUSTER_STR" ]
 then
-    echo "Running command: ${GREEN}$SPARK_SUBMIT --master spark://des-moines:50000 --deploy-mode cluster --class wdi.CorrelationCalculator build/libs/Econ-CO2.jar ~ cluster ${NORMAL}"
-    $SPARK_SUBMIT --master spark://des-moines:50000 --deploy-mode cluster --class wdi.CorrelationCalculator build/libs/Econ-CO2.jar ~ cluster
+    echo "Running command: ${GREEN}$SPARK_SUBMIT --master spark://des-moines:50000 --deploy-mode cluster --class wdi.CorrelationCalculator build/libs/Econ-CO2.jar ~ cluster ${OPTION}${NORMAL}"
+    $SPARK_SUBMIT --master spark://des-moines:50000 --deploy-mode cluster --class wdi.CorrelationCalculator build/libs/Econ-CO2.jar ~ cluster ${OPTION}
 fi
