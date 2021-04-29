@@ -49,6 +49,9 @@ public class CorrelationCalculator {
     	boolean normalize = false;
     	if (args.length > 2 && args[2].equals("true")) normalize = true;
     	
+    	boolean graph = false;
+    	if (args.length > 2 && args[2].equals("graph")) graph = true;
+    	
     	SparkConf sparkConf;
     	if (cluster) {
     		sparkConf = new SparkConf().setAppName("Economic indicators correlation to CO2 emssions").setMaster("spark://des-moines:50000"); 
@@ -57,6 +60,17 @@ public class CorrelationCalculator {
     	}
         JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
         JavaRDD<String> stringJavaRDD = sparkContext.textFile("file://" + homeDir + "/WDIDataset/Indicators.csv");
+        
+        if (graph) {
+        	JavaPairRDD<String, Double> co2 = pair(filterByIndicatorCode(stringJavaRDD, CO2IndicatorCode));
+        	JavaPairRDD<String, Double> gdp = pair(filterByIndicatorCode(stringJavaRDD, indicators[3]));
+        	JavaPairRDD<String, Tuple2<Double, Double>> paired = co2.join(gdp);
+        	
+        	for (Tuple2<String, Tuple2<Double, Double>> bigTuple : paired.collect()) {
+        		System.out.println(bigTuple._1 + "," + bigTuple._2._1 + "," + bigTuple._2._2);
+        	}
+        	return;
+        }
 
         //TEST RUN FOR MERCHANDISE EXPORTS (TX.VAL.MRCH.CD.WT)
         //CO2 EN.ATM.CO2E.PC
